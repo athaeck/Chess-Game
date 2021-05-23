@@ -1,0 +1,49 @@
+{
+  "Graph|2021-05-23T14:11:54.579Z|49352": {
+    "ƒ.Graph": {
+      "name": "Chess",
+      "components": {},
+      "children": [
+        {
+          "ƒ.Node": {
+            "name": "Surface",
+            "components": {},
+            "children": [
+              {
+                "ƒ.Node": {
+                  "name": "Places",
+                  "components": {},
+                  "children": []
+                }
+              }
+            ]
+          }
+        },
+        {
+          "ƒ.Node": {
+            "name": "Figures",
+            "components": {},
+            "children": [
+              {
+                "ƒ.Node": {
+                  "name": "Player",
+                  "components": {},
+                  "children": []
+                }
+              },
+              {
+                "ƒ.Node": {
+                  "name": "Enemy",
+                  "components": {},
+                  "children": []
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "idResource": "Graph|2021-05-23T14:11:54.579Z|49352",
+      "type": "Graph"
+    }
+  }
+}
