@@ -1,5 +1,6 @@
 namespace ChessGame {
     import f = FudgeCore;
+
     export interface Player {
         _rigidbody: f.ComponentRigidbody;
         _avatar: f.Node;
@@ -8,6 +9,9 @@ namespace ChessGame {
         _node: f.Node;
         _componentCamera: f.ComponentCamera;
     }
+    const ChessFigures: string[] = [
+        "Turm", "Springer", "Läufer", "Dame", "König", "Läufer", "Springer", "Turm", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer"
+    ];
     let _root: f.Graph;
     let _player: Player;
     let _viewport: f.Viewport;
@@ -25,6 +29,7 @@ namespace ChessGame {
 
     window.addEventListener("load", Start);
     async function Start(event: Event): Promise<void> {
+        // console.log()
         f.Physics.settings.debugMode = f.PHYSICS_DEBUGMODE.COLLIDERS;
         f.Physics.settings.debugDraw = true;
         f.Physics.settings.defaultRestitution = 0.5;
@@ -34,7 +39,7 @@ namespace ChessGame {
         await FudgeCore.Project.loadResourcesFromHTML();
         FudgeCore.Debug.log("Project:", FudgeCore.Project.resources);
         _root = <f.Graph>FudgeCore.Project.resources["Graph|2021-05-23T14:11:54.579Z|49352"];
-        console.log(_root);
+        // console.log(_root);
 
         InitWorld();
         InitCamera();
@@ -50,7 +55,7 @@ namespace ChessGame {
         _viewport.initialize("Viewport", _root, _camera._componentCamera, _canvas);
         _canvas.addEventListener("mousemove", mouseMove);
         _canvas.addEventListener("click", _canvas.requestPointerLock);
-
+        console.log(_root)
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
         f.Loop.start();
     }
@@ -84,7 +89,7 @@ namespace ChessGame {
         player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 5, -10))));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
-        console.log(player);
+        // console.log(player);
         _player = player;
         _root.appendChild(_player._avatar);
     }
@@ -92,19 +97,42 @@ namespace ChessGame {
         const surface: f.Node = _root.getChildrenByName("Surface")[0];
         surface.addComponent(new ƒ.ComponentRigidbody(0, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT));
         _surface = surface;
-        console.log(_surface);
+        // console.log(_surface);
+        const figures: f.Node = _root.getChildrenByName("Figures")[0];
+        const player: f.Node = figures.getChildrenByName("Player")[0];
+        const enemy: f.Node = figures.getChildrenByName("Enemy")[0];
         const places: f.Node = _root.getChildrenByName("Places")[0];
         _places = places.getChildren();
         for (let place of _places) {
-            const rigidbody: f.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT)
+            const rigidbody: f.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);
             rigidbody.mtxPivot.scaleZ(0.1);
             place.addComponent(rigidbody);
+            place.addComponent(new PlaceController());
         }
-        const figures: f.Node = _root.getChildrenByName("Figures")[0];
-        console.log(_places);
+        for (let i: number = 0; i < 16; i++) {
+            const place: f.Node = _places[i];
+            const placeController: PlaceController = place.getComponent(PlaceController);
+            const chessFigure: ChessFigure = new ChessFigure(ChessFigures[i], 1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.PLAYER);
+            placeController.SetChessFigure(chessFigure);
+            player.addChild(chessFigure);
+        }
+        let index: number = 0;
+        for (let i: number = _places.length - 1; i > _places.length - 17; i--) {
+            const place: f.Node = _places[i];
+            const placeController: PlaceController = place.getComponent(PlaceController);
+            const chessFigure: ChessFigure = new ChessFigure(ChessFigures[index], 1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.ENEMY);
+            placeController.SetChessFigure(chessFigure);
+            enemy.addChild(chessFigure);
+            index++;
+        }
+
+        // console.log(_places);
     }
+    // function CreateChessFigure(position: f.ComponentTransform): ChessFigure {
+
+    // }
     function InitController() {
-        
+
     }
     function HandleGame(event: Event): void {
 

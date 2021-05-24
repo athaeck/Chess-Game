@@ -2,6 +2,9 @@
 var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
+    const ChessFigures = [
+        "Turm", "Springer", "Läufer", "Dame", "König", "Läufer", "Springer", "Turm", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer"
+    ];
     let _root;
     let _player;
     let _viewport;
@@ -18,6 +21,7 @@ var ChessGame;
     // let _currentFigure: f.Node;
     window.addEventListener("load", Start);
     async function Start(event) {
+        // console.log()
         f.Physics.settings.debugMode = f.PHYSICS_DEBUGMODE.COLLIDERS;
         f.Physics.settings.debugDraw = true;
         f.Physics.settings.defaultRestitution = 0.5;
@@ -25,7 +29,7 @@ var ChessGame;
         await FudgeCore.Project.loadResourcesFromHTML();
         FudgeCore.Debug.log("Project:", FudgeCore.Project.resources);
         _root = FudgeCore.Project.resources["Graph|2021-05-23T14:11:54.579Z|49352"];
-        console.log(_root);
+        // console.log(_root);
         InitWorld();
         InitCamera();
         InitAvatar();
@@ -36,6 +40,7 @@ var ChessGame;
         _viewport.initialize("Viewport", _root, _camera._componentCamera, _canvas);
         _canvas.addEventListener("mousemove", mouseMove);
         _canvas.addEventListener("click", _canvas.requestPointerLock);
+        console.log(_root);
         f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, HandleGame);
         f.Loop.start();
     }
@@ -66,7 +71,7 @@ var ChessGame;
         player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 5, -10))));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
-        console.log(player);
+        // console.log(player);
         _player = player;
         _root.appendChild(_player._avatar);
     }
@@ -74,17 +79,38 @@ var ChessGame;
         const surface = _root.getChildrenByName("Surface")[0];
         surface.addComponent(new ƒ.ComponentRigidbody(0, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT));
         _surface = surface;
-        console.log(_surface);
+        // console.log(_surface);
+        const figures = _root.getChildrenByName("Figures")[0];
+        const player = figures.getChildrenByName("Player")[0];
+        const enemy = figures.getChildrenByName("Enemy")[0];
         const places = _root.getChildrenByName("Places")[0];
         _places = places.getChildren();
         for (let place of _places) {
             const rigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);
             rigidbody.mtxPivot.scaleZ(0.1);
             place.addComponent(rigidbody);
+            place.addComponent(new ChessGame.PlaceController());
         }
-        const figures = _root.getChildrenByName("Figures")[0];
-        console.log(_places);
+        for (let i = 0; i < 16; i++) {
+            const place = _places[i];
+            const placeController = place.getComponent(ChessGame.PlaceController);
+            const chessFigure = new ChessGame.ChessFigure(ChessFigures[i], 1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, ChessGame.UserType.PLAYER);
+            placeController.SetChessFigure(chessFigure);
+            player.addChild(chessFigure);
+        }
+        let index = 0;
+        for (let i = _places.length - 1; i > _places.length - 17; i--) {
+            const place = _places[i];
+            const placeController = place.getComponent(ChessGame.PlaceController);
+            const chessFigure = new ChessGame.ChessFigure(ChessFigures[index], 1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, ChessGame.UserType.ENEMY);
+            placeController.SetChessFigure(chessFigure);
+            enemy.addChild(chessFigure);
+            index++;
+        }
+        // console.log(_places);
     }
+    // function CreateChessFigure(position: f.ComponentTransform): ChessFigure {
+    // }
     function InitController() {
     }
     function HandleGame(event) {
