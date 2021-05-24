@@ -16,28 +16,49 @@ namespace ChessGame {
     let _inputController: InputController;
     let _gameTime: Number;
     let _dragTime: Number;
+    let _speed: number = 1;
+    let _places: f.Node[] = [];
+    let _surface: f.Node;
+    // let _playerFigures: f.Node[] = [];
+    // let _enemyFigures: f.Node[] = [];
+    // let _currentFigure: f.Node;
+
     window.addEventListener("load", Start);
     async function Start(event: Event): Promise<void> {
         f.Physics.settings.debugMode = f.PHYSICS_DEBUGMODE.COLLIDERS;
         f.Physics.settings.debugDraw = true;
         f.Physics.settings.defaultRestitution = 0.5;
         f.Physics.settings.defaultFriction = 0.8;
-        await FudgeCore.Project.loadResourcesFromHTML();
-        const root: f.Graph = <f.Graph>FudgeCore.Project.resources["Graph|2021-05-23T14:11:54.579Z|49352"];
 
-        // const gameController: GameController = new GameController(root);
-        // this = gameController;
-        _root = root;
+
+        await FudgeCore.Project.loadResourcesFromHTML();
+        FudgeCore.Debug.log("Project:", FudgeCore.Project.resources);
+        _root = <f.Graph>FudgeCore.Project.resources["Graph|2021-05-23T14:11:54.579Z|49352"];
         console.log(_root);
-        // f.Physics.settings.debugDraw = true;
+
+        InitWorld();
         InitCamera();
         InitAvatar();
+        InitController();
+
+
         f.Physics.adjustTransforms(_root, true);
+
+
         _canvas = document.querySelector("canvas");
         _viewport = new f.Viewport();
         _viewport.initialize("Viewport", _root, _camera._componentCamera, _canvas);
+        _canvas.addEventListener("mousemove", mouseMove);
+        _canvas.addEventListener("click", _canvas.requestPointerLock);
+
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
         f.Loop.start();
+    }
+    function mouseMove(_event: MouseEvent): void {
+
+
+        _player._rigidbody.rotateBody(f.Vector3.Y(-1 * _event.movementX * _speed / 10));
+        _camera._node.mtxLocal.rotateX(_event.movementY * _speed / 10);
     }
     function InitCamera(): void {
         const camera: Camera = {
@@ -46,21 +67,50 @@ namespace ChessGame {
         };
         camera._node.addComponent(camera._componentCamera);
         camera._node.addComponent(new f.ComponentTransform(new f.Matrix4x4));
+        // camera._componentCamera.mtxPivot.lookAt(_places[0].mtxLocal.translation);
         _camera = camera;
+        // _camera._node
     }
     function InitAvatar(): void {
         const player: Player = {
             _rigidbody: null,
             _avatar: new f.Node("Player")
         };
-        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 5, .5))));
+        player._rigidbody = new f.ComponentRigidbody(0.1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CAPSULE, f.PHYSICS_GROUP.DEFAULT);
+        player._rigidbody.restitution = 0.5;
+        player._rigidbody.rotationInfluenceFactor = f.Vector3.ZERO();
+        player._rigidbody.friction = 2;
+
+        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 5, -10))));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
+        console.log(player);
         _player = player;
         _root.appendChild(_player._avatar);
     }
+    function InitWorld(): void {
+        const surface: f.Node = _root.getChildrenByName("Surface")[0];
+        surface.addComponent(new ƒ.ComponentRigidbody(0, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT));
+        _surface = surface;
+        console.log(_surface);
+        const places: f.Node = _root.getChildrenByName("Places")[0];
+        _places = places.getChildren();
+        for (let place of _places) {
+            const rigidbody: f.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT)
+            rigidbody.mtxPivot.scaleZ(0.1);
+            place.addComponent(rigidbody);
+        }
+        const figures: f.Node = _root.getChildrenByName("Figures")[0];
+        console.log(_places);
+    }
+    function InitController() {
+        
+    }
     function HandleGame(event: Event): void {
 
+        ƒ.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
+        _viewport.draw();
+        // f.Physics.settings.debugDraw = true;
     }
 
 }

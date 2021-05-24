@@ -1,11 +1,10 @@
 "use strict";
 var ChessGame;
 (function (ChessGame) {
-    var f = FudgeCore;
-    class InputController extends f.ComponentScript {
-        constructor() {
-            super();
+    class InputController {
+        constructor(places) {
             console.log("");
+            this._places = places;
         }
     }
     ChessGame.InputController = InputController;
