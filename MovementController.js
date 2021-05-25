@@ -3,9 +3,11 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class MovementController extends f.ComponentScript {
-        constructor() {
+        constructor(start, destination, places) {
             super();
-            console.log("");
+            this._start = start;
+            this._destination = destination;
+            this._places = places;
         }
     }
     ChessGame.MovementController = MovementController;

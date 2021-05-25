@@ -2,10 +2,6 @@
 var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
-    // const ChessFigures: string[] = [
-    //     "Turm", "Springer", "Läufer", "Dame", "König", "Läufer", "Springer", "Turm", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer"
-    // ];
-    // const Movements: Move
     const CHESSFIGUREMOVEMENTS = {
         "Turm": {
             _attack: null,
@@ -159,15 +155,23 @@ var ChessGame;
             this._place = place;
             this._user = user;
             this._move = CHESSFIGUREMOVEMENTS[name];
-            console.log(this._move);
+            console.log(this);
+            let posY = 0;
             let mesh = new f.MeshSphere;
             let componentMesh = new f.ComponentMesh(mesh);
-            componentMesh.mtxPivot.scale(new f.Vector3(0.8, 2, 0.8));
+            if (name === "Bauer") {
+                posY = this._place.mtxLocal.translation.y + 0.5;
+                componentMesh.mtxPivot.scale(new f.Vector3(0.8, 1, 0.8));
+            }
+            else {
+                posY = this._place.mtxLocal.translation.y + 1;
+                componentMesh.mtxPivot.scale(new f.Vector3(0.8, 2, 0.8));
+            }
             this.addComponent(componentMesh);
             let materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user === ChessGame.UserType.PLAYER ? "Black" : "White")));
             let componentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);
-            this.mtxLocal.translate(new f.Vector3(this._place.mtxLocal.translation.x, this._place.mtxLocal.translation.y + 1, this._place.mtxLocal.translation.z));
+            this.mtxLocal.translate(new f.Vector3(this._place.mtxLocal.translation.x, posY, this._place.mtxLocal.translation.z));
         }
         SetPlace(place) {
             this._place = place;

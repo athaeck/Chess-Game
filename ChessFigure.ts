@@ -1,9 +1,5 @@
 namespace ChessGame {
     import f = FudgeCore;
-    // const ChessFigures: string[] = [
-    //     "Turm", "Springer", "Läufer", "Dame", "König", "Läufer", "Springer", "Turm", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer"
-    // ];
-    // const Movements: Move
     const CHESSFIGUREMOVEMENTS: ChessPlayerSettings = {
         "Turm": {
             _attack: null,
@@ -162,18 +158,26 @@ namespace ChessGame {
             this._place = place;
             this._user = user;
             this._move = CHESSFIGUREMOVEMENTS[name];
-            console.log(this._move);
-            let mesh: f.Mesh = new f.MeshSphere;
 
+            console.log(this);
+
+            let posY: number = 0;
+            let mesh: f.Mesh = new f.MeshSphere;
             let componentMesh: f.ComponentMesh = new f.ComponentMesh(mesh);
-            componentMesh.mtxPivot.scale(new f.Vector3(0.8, 2, 0.8));
+            if (name === "Bauer") {
+                posY = this._place.mtxLocal.translation.y + 0.5;
+                componentMesh.mtxPivot.scale(new f.Vector3(0.8, 1, 0.8));
+            } else {
+                posY = this._place.mtxLocal.translation.y + 1;
+                componentMesh.mtxPivot.scale(new f.Vector3(0.8, 2, 0.8));
+            }
             this.addComponent(componentMesh);
 
             let materialSolidWhite: f.Material = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user === UserType.PLAYER ? "Black" : "White")));
             let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);
 
-            this.mtxLocal.translate(new f.Vector3(this._place.mtxLocal.translation.x, this._place.mtxLocal.translation.y + 1, this._place.mtxLocal.translation.z));
+            this.mtxLocal.translate(new f.Vector3(this._place.mtxLocal.translation.x, posY, this._place.mtxLocal.translation.z));
 
         }
         public SetPlace(place: f.Node): void {

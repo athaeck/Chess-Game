@@ -2,9 +2,13 @@
 var ChessGame;
 (function (ChessGame) {
     class InputController {
-        constructor(places) {
+        constructor(places, player, cameraController) {
             console.log("");
             this._places = places;
+            this._player = player;
+            this._cameraController = cameraController;
+        }
+        HandleInput() {
         }
     }
     ChessGame.InputController = InputController;

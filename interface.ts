@@ -1,4 +1,5 @@
 namespace ChessGame {
+    import f = FudgeCore;
     export interface Movement {
         _fieldsX: number;
         _fieldsZ: number;
@@ -6,7 +7,6 @@ namespace ChessGame {
         _movementBackwards: boolean;
         _initScale: boolean;
     }
-
     export interface Attack {
         _fieldsX: number;
         _fieldsZ: number;
@@ -17,10 +17,10 @@ namespace ChessGame {
         _movement:  Movement[];
         _attack:  Attack[];
     }
-    // export interface Movements {
-    //     [key: string]: Movement;
-    // }
     export interface ChessPlayerSettings {
         [key: string]: ChessPlayerSetting;
     }
+    export type ChessPlayer = {
+        [key in UserType]: f.Node;
+    };
 }
