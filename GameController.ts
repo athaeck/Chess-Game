@@ -24,6 +24,8 @@ namespace ChessGame {
     let _speed: number = 1;
     let _places: f.Node[] = [];
     let _surface: f.Node;
+    let _chessPlayer: ChessPlayer;
+    let _maxTime: number = 120;
     // let _playerFigures: f.Node[] = [];
     // let _enemyFigures: f.Node[] = [];
     // let _currentFigure: f.Node;
@@ -42,23 +44,28 @@ namespace ChessGame {
         _root = <f.Graph>FudgeCore.Project.resources["Graph|2021-05-23T14:11:54.579Z|49352"];
         // console.log(_root);
 
+        StartChessMatch();
+    }
+    function StartChessMatch(): void{
         InitWorld();
         InitCamera();
         InitAvatar();
         InitController();
 
-
         f.Physics.adjustTransforms(_root, true);
-
 
         _canvas = document.querySelector("canvas");
         _viewport = new f.Viewport();
         _viewport.initialize("Viewport", _root, _camera._componentCamera, _canvas);
+
+        Hud.start();
+
         _canvas.addEventListener("mousemove", mouseMove);
         _canvas.addEventListener("click", _canvas.requestPointerLock);
-        console.log(_root)
+        console.log(_root);
+        _inputController.ResetTimer();
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
-        f.Loop.start();
+        f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
     }
     function mouseMove(_event: MouseEvent): void {
 
@@ -93,6 +100,7 @@ namespace ChessGame {
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
 
+        ƒ.AudioManager.default.listenTo(_root);
         _player = player;
         _root.appendChild(_player._avatar);
     }
@@ -114,7 +122,7 @@ namespace ChessGame {
         for (let i: number = 0; i < 16; i++) {
             const place: f.Node = _places[i];
             const placeController: PlaceController = place.getComponent(PlaceController);
-            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[i], 1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.PLAYER);
+            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[i], 1, f.PHYSICS_TYPE.KINEMATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.PLAYER);
             placeController.SetChessFigure(chessFigure);
             player.addChild(chessFigure);
         }
@@ -122,21 +130,26 @@ namespace ChessGame {
         for (let i: number = _places.length - 1; i > _places.length - 17; i--) {
             const place: f.Node = _places[i];
             const placeController: PlaceController = place.getComponent(PlaceController);
-            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[index], 1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.ENEMY);
+            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[index], 1, f.PHYSICS_TYPE.KINEMATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.ENEMY);
             placeController.SetChessFigure(chessFigure);
             enemy.addChild(chessFigure);
             index++;
         }
-
-        // console.log(_places);
+        const CHESSPLAYER: ChessPlayer = {
+            player,
+            enemy
+        }
+        _chessPlayer = CHESSPLAYER;
+        // console.log(_places);-
     }
 
-    function InitController() {
-        // _cameraController = new CameraController();
+    function InitController(): void {
 
+        // _cameraController = new CameraController();
+        _inputController = new InputController(_places, _chessPlayer, _cameraController,_maxTime);
     }
     function HandleGame(event: Event): void {
-
+        _inputController.HandleInput();
         ƒ.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
         _viewport.draw();
         // f.Physics.settings.debugDraw = true;

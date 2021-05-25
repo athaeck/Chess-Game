@@ -1,16 +1,23 @@
 "use strict";
 var ChessGame;
 (function (ChessGame) {
+    var ƒui = FudgeUserInterface;
     class GameState extends ƒ.Mutable {
-        // public hits: number = 0;
+        constructor() {
+            super(...arguments);
+            // public hits: number = 0;
+            this.time = 120;
+            this.player = "player";
+            this.currentTime = 0;
+        }
         reduceMutator(_mutator) { }
     }
     ChessGame.gameState = new GameState();
     class Hud {
         static start() {
-            //   let domHud: HTMLDivElement = document.querySelector("div");
-            //   Hud.controller = new ƒui.Controller(gameState, domHud);
-            //   Hud.controller.updateUserInterface();
+            let domHud = document.querySelector("div#ui-wrapper");
+            Hud.controller = new ƒui.Controller(ChessGame.gameState, domHud);
+            Hud.controller.updateUserInterface();
         }
     }
     ChessGame.Hud = Hud;

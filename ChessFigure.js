@@ -155,7 +155,7 @@ var ChessGame;
             this._place = place;
             this._user = user;
             this._move = CHESSFIGUREMOVEMENTS[name];
-            console.log(this);
+            // console.log(this);
             let posY = 0;
             let mesh = new f.MeshSphere;
             let componentMesh = new f.ComponentMesh(mesh);

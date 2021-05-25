@@ -10,23 +10,27 @@
   <script type="text/javascript" src="../FudgeUserInterface/FudgeUserInterface.js">  </script>
   <script type="text/javascript" src="enum.js"></script>
   <script type="text/javascript" src="interface.js"></script>
+  <script type="text/javascript" src="UIController.js"></script>
   <script type="text/javascript" src="CameraController.js"></script>
   <script type="text/javascript" src="MovementController.js"></script>
   <script type="text/javascript" src="GameObject.js"></script>
   <script type="text/javascript" src="ChessFigure.js"></script>
   <script type="text/javascript" src="SoundController.js"></script>
- <script type="text/javascript" src="PlaceController.js"></script>
-<script type="text/javascript" src="InputController.js"></script>
-<script type="text/javascript" src="GameController.js"></script>
+  <script type="text/javascript" src="PlaceController.js"></script>
+  <script type="text/javascript" src="InputController.js"></script>
+  <script type="text/javascript" src="GameController.js"></script>
   <link rel="stylesheet" href="ChessGame.css" />
   <link type="resources" src="ChessGame.json" />
 
 </head>
 <body>
-<dialog>
-    <h1>PhysicsGame</h1>
-    <p>click to start</p>
-  </dialog>
+  <!-- UI -->
+<div id="ui-wrapper">
+  verbrauchte Zeit <input type="number" key="currentTime" disabled />s
+  Nutzungszeit <meter min="0" max="120" key="time" disabled ></meter>
+  Player am Zug <input type="text" key="player" disabled />
+</div>
 <canvas class="fullscreen"></canvas>
+
 </body>
 </html>

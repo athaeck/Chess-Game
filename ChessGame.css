@@ -1,16 +1,34 @@
-html, body {
-  padding: 0px;
-  margin: 0px;
-  width: 100%;
-  height: 100%;
- overflow: hidden;
+html,
+body {
+    padding: 0px;
+    margin: 0px;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
-dialog { 
-  text-align: center; 
+dialog {
+    text-align: center;
 }
 
-canvas.fullscreen { 
-  width: 100vw; 
-  height: 100vh; 
+canvas.fullscreen {
+    width: 100vw;
+    height: 100vh;
+}
+
+#ui-wrapper {
+    /* position:absolute; */
+    position: absolute;
+    width: 100vw;
+    height: 100px;
+    top: 1px;
+    color: white;
+}
+
+input {
+    background-color: transparent;
+    border-color: transparent;
+    color: white;
+    width: 50px;
+    text-align: center;
 }

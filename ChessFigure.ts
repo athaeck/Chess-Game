@@ -159,7 +159,7 @@ namespace ChessGame {
             this._user = user;
             this._move = CHESSFIGUREMOVEMENTS[name];
 
-            console.log(this);
+            // console.log(this);
 
             let posY: number = 0;
             let mesh: f.Mesh = new f.MeshSphere;

@@ -3,7 +3,11 @@ namespace ChessGame {
     export class SoundController extends f.ComponentScript {
         constructor() {
             super();
-
+            // f.EVENT_AUDIO.
+        }
+        public PlaySound(): void {
+            const audio: ƒ.ComponentAudio = this.getContainer().getComponent(f.ComponentAudio);
+            audio.play(true);
         }
     }
 }
