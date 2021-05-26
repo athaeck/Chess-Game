@@ -26,6 +26,7 @@ namespace ChessGame {
     let _surface: f.Node;
     let _chessPlayer: ChessPlayer;
     let _maxTime: number = 120;
+    let _selectionControl: SelectionControl;
     // let _playerFigures: f.Node[] = [];
     // let _enemyFigures: f.Node[] = [];
     // let _currentFigure: f.Node;
@@ -96,7 +97,7 @@ namespace ChessGame {
         player._rigidbody.rotationInfluenceFactor = f.Vector3.ZERO();
         player._rigidbody.friction = 2;
 
-        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 5, -10))));
+        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 10, -10))));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
 
@@ -144,9 +145,13 @@ namespace ChessGame {
     }
 
     function InitController(): void {
-
+        
+        _selectionControl = new SelectionControl();
         // _cameraController = new CameraController();
-        _inputController = new InputController(_places, _chessPlayer, _cameraController,_maxTime);
+        _inputController = new InputController(_places, _chessPlayer, _cameraController, _maxTime,_selectionControl);
+        
+        _root.appendChild(_selectionControl);
+        
     }
     function HandleGame(event: Event): void {
         _inputController.HandleInput();

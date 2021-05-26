@@ -19,6 +19,7 @@ var ChessGame;
     let _surface;
     let _chessPlayer;
     let _maxTime = 120;
+    let _selectionControl;
     // let _playerFigures: f.Node[] = [];
     // let _enemyFigures: f.Node[] = [];
     // let _currentFigure: f.Node;
@@ -78,7 +79,7 @@ var ChessGame;
         player._rigidbody.restitution = 0.5;
         player._rigidbody.rotationInfluenceFactor = f.Vector3.ZERO();
         player._rigidbody.friction = 2;
-        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 5, -10))));
+        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 10, -10))));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
         ƒ.AudioManager.default.listenTo(_root);
@@ -124,8 +125,10 @@ var ChessGame;
         // console.log(_places);-
     }
     function InitController() {
+        _selectionControl = new ChessGame.SelectionControl();
         // _cameraController = new CameraController();
-        _inputController = new ChessGame.InputController(_places, _chessPlayer, _cameraController, _maxTime);
+        _inputController = new ChessGame.InputController(_places, _chessPlayer, _cameraController, _maxTime, _selectionControl);
+        _root.appendChild(_selectionControl);
     }
     function HandleGame(event) {
         _inputController.HandleInput();

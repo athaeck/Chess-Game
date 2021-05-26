@@ -17,8 +17,10 @@ namespace ChessGame {
         private _break: boolean = false;
         private _currentChessFigureIndex: number = 0;
         private _clickable: boolean = true;
-        constructor(places: f.Node[], player: ChessPlayer, cameraController: CameraController, maxTime: number) {
+        private _selectionControl: SelectionControl;
+        constructor(places: f.Node[], player: ChessPlayer, cameraController: CameraController, maxTime: number, selectionControl: SelectionControl) {
             console.log("");
+            this._selectionControl = selectionControl;
             this._places = places;
             this._player = player;
             this._cameraController = cameraController;
@@ -31,27 +33,31 @@ namespace ChessGame {
             // this.HandleEvents();
         }
         public HandleInput(): void {
-
+            this.HandleSelectionControl();
             this.UpdateTimer();
             if (this._currentPlayer === UserType.PLAYER) {
                 if (this._clickable && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D])) {
                     this._currentChessFigureIndex++;
-                    console.log(this._currentChessFigureIndex);
+                    this.CheckIfValidIndex();
+                    // console.log(this._currentChessFigureIndex);
                     this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
                     this._clickable = false;
                     ƒ.Time.game.setTimer(500, 1, () => this._clickable = true);
                 }
                 if (this._clickable && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A])) {
                     this._currentChessFigureIndex--;
-                    console.log(this._currentChessFigureIndex);
+                    this.CheckIfValidIndex();
+                    // console.log(this._currentChessFigureIndex);
                     this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
                     this._clickable = false;
                     ƒ.Time.game.setTimer(500, 1, () => this._clickable = true);
                 }
 
-            }
 
-            this.CheckIfValidIndex();
+            }
+            
+
+           
             // if (this._currentChessFigureIndex <= this._player[this._currentPlayer].getChildren().length - 1 && this._currentChessFigureIndex >= 0) {
             //     // this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex].getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
             //     // this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex].getComponent(f.ComponentRigidbody).setVelocity(new f.Vector3(0, 5, 0));
@@ -79,16 +85,17 @@ namespace ChessGame {
                     soundFile = "Ufo";
                     break;
             }
-            const sound: f.ComponentAudio = new f.ComponentAudio(new f.Audio(`Audio/${soundFile}.mp3`));
-            this._player[this._currentPlayer].getChildren()[index].addComponent(sound);
-            // this._player[this._currentPlayer].getChildren()[index].addComponent(SoundController);
-            // const soundController: SoundController = new SoundController(soundFile);
-            // this._player[this._currentPlayer].getChildren()[index].addComponent(soundController);
-            // if (this._player[this._currentPlayer].getChildren()[index].getComponent(soundController) !== null) {
-            //     f.Time.game.setTimer(1000, 0, () => {
-            //         this._player[this._currentPlayer].getChildren()[index].removeComponent(soundController);
-            //     });
-            // }
+            const soundController: SoundController = new SoundController(soundFile);
+            this._player[this._currentPlayer].getChildren()[index].addComponent(soundController);
+        }
+        private HandleSelectionControl(): void {
+            if (this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex]) {
+                const _currentFigure: ChessFigure = this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex] as ChessFigure;
+                const _currentPlace: f.Node = _currentFigure.GetPlace();
+                const v3: f.Vector3 = new f.Vector3(_currentPlace.mtxLocal.translation.x, 3, _currentPlace.mtxLocal.translation.z)
+                this._selectionControl.mtxLocal.translation = v3;
+                
+            }
         }
         private CheckIfValidIndex(): void {
             // console.log(this._currentChessFigureIndex);
@@ -114,6 +121,7 @@ namespace ChessGame {
             const r: number = this._userTimer[this._currentPlayer]._usedTime;
             this._userTimer[this._currentPlayer]._usedTime = r - t;
             this._currentUseTime = 0;
+            this._currentChessFigureIndex = 0;
         }
 
     }

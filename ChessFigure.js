@@ -151,14 +151,12 @@ var ChessGame;
     };
     class ChessFigure extends ChessGame.GameObject {
         constructor(name, mass, pysicsType, colliderType, group, place, user) {
-            super(name, mass, pysicsType, colliderType, group);
+            super(name, mass, pysicsType, colliderType, group, new f.MeshSphere);
             this._place = place;
             this._user = user;
             this._move = CHESSFIGUREMOVEMENTS[name];
-            // console.log(this);
             let posY = 0;
-            let mesh = new f.MeshSphere;
-            let componentMesh = new f.ComponentMesh(mesh);
+            let componentMesh = this.getComponent(f.ComponentMesh);
             if (name === "Bauer") {
                 posY = this._place.mtxLocal.translation.y + 0.5;
                 componentMesh.mtxPivot.scale(new f.Vector3(0.8, 1, 0.8));
@@ -167,7 +165,6 @@ var ChessGame;
                 posY = this._place.mtxLocal.translation.y + 1;
                 componentMesh.mtxPivot.scale(new f.Vector3(0.8, 2, 0.8));
             }
-            this.addComponent(componentMesh);
             let materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user === ChessGame.UserType.PLAYER ? "Black" : "White")));
             let componentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);

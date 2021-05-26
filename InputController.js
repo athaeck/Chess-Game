@@ -3,13 +3,14 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class InputController {
-        constructor(places, player, cameraController, maxTime) {
+        constructor(places, player, cameraController, maxTime, selectionControl) {
             this._currentUseTime = 0;
             this._currentPlayer = ChessGame.UserType.PLAYER;
             this._break = false;
             this._currentChessFigureIndex = 0;
             this._clickable = true;
             console.log("");
+            this._selectionControl = selectionControl;
             this._places = places;
             this._player = player;
             this._cameraController = cameraController;
@@ -22,24 +23,26 @@ var ChessGame;
             // this.HandleEvents();
         }
         HandleInput() {
+            this.HandleSelectionControl();
             this.UpdateTimer();
             if (this._currentPlayer === ChessGame.UserType.PLAYER) {
                 if (this._clickable && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D])) {
                     this._currentChessFigureIndex++;
-                    console.log(this._currentChessFigureIndex);
+                    this.CheckIfValidIndex();
+                    // console.log(this._currentChessFigureIndex);
                     this.HandleSoundController(ChessGame.SoundType.SELECT_CHESSFIGURE);
                     this._clickable = false;
                     ƒ.Time.game.setTimer(500, 1, () => this._clickable = true);
                 }
                 if (this._clickable && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A])) {
                     this._currentChessFigureIndex--;
-                    console.log(this._currentChessFigureIndex);
+                    this.CheckIfValidIndex();
+                    // console.log(this._currentChessFigureIndex);
                     this.HandleSoundController(ChessGame.SoundType.SELECT_CHESSFIGURE);
                     this._clickable = false;
                     ƒ.Time.game.setTimer(500, 1, () => this._clickable = true);
                 }
             }
-            this.CheckIfValidIndex();
             // if (this._currentChessFigureIndex <= this._player[this._currentPlayer].getChildren().length - 1 && this._currentChessFigureIndex >= 0) {
             //     // this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex].getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
             //     // this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex].getComponent(f.ComponentRigidbody).setVelocity(new f.Vector3(0, 5, 0));
@@ -67,16 +70,16 @@ var ChessGame;
                     soundFile = "Ufo";
                     break;
             }
-            const sound = new f.ComponentAudio(new f.Audio(`Audio/${soundFile}.mp3`));
-            this._player[this._currentPlayer].getChildren()[index].addComponent(sound);
-            // this._player[this._currentPlayer].getChildren()[index].addComponent(SoundController);
-            // const soundController: SoundController = new SoundController(soundFile);
-            // this._player[this._currentPlayer].getChildren()[index].addComponent(soundController);
-            // if (this._player[this._currentPlayer].getChildren()[index].getComponent(soundController) !== null) {
-            //     f.Time.game.setTimer(1000, 0, () => {
-            //         this._player[this._currentPlayer].getChildren()[index].removeComponent(soundController);
-            //     });
-            // }
+            const soundController = new ChessGame.SoundController(soundFile);
+            this._player[this._currentPlayer].getChildren()[index].addComponent(soundController);
+        }
+        HandleSelectionControl() {
+            if (this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex]) {
+                const _currentFigure = this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex];
+                const _currentPlace = _currentFigure.GetPlace();
+                const v3 = new f.Vector3(_currentPlace.mtxLocal.translation.x, 3, _currentPlace.mtxLocal.translation.z);
+                this._selectionControl.mtxLocal.translation = v3;
+            }
         }
         CheckIfValidIndex() {
             // console.log(this._currentChessFigureIndex);
@@ -102,6 +105,7 @@ var ChessGame;
             const r = this._userTimer[this._currentPlayer]._usedTime;
             this._userTimer[this._currentPlayer]._usedTime = r - t;
             this._currentUseTime = 0;
+            this._currentChessFigureIndex = 0;
         }
     }
     ChessGame.InputController = InputController;
