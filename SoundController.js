@@ -7,17 +7,8 @@ var ChessGame;
             super();
             this._volume = 5;
             this._soundFileName = soundName;
-            // f.EVENT_AUDIO.
             this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.Created.bind(this));
         }
-        // public PlaySound(): void {
-        //     // console.log(event);
-        //     // const 
-        // }
-        // // public PlaySound(): void {
-        // //     // const audio: ƒ.ComponentAudio = this.getContainer().getComponent(f.ComponentAudio);
-        // //     // audio.play(true);
-        // // }
         Created(event) {
             const audio = new f.Audio(`Audio/${this._soundFileName}.mp3`);
             const soundComponent = new f.ComponentAudio(audio);

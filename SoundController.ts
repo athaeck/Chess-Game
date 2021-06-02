@@ -6,17 +6,8 @@ namespace ChessGame {
         constructor(soundName: string) {
             super();
             this._soundFileName = soundName;
-            // f.EVENT_AUDIO.
             this.addEventListener(f.EVENT.COMPONENT_ADD, this.Created.bind(this));
         }
-        // public PlaySound(): void {
-        //     // console.log(event);
-        //     // const 
-        // }
-        // // public PlaySound(): void {
-        // //     // const audio: ƒ.ComponentAudio = this.getContainer().getComponent(f.ComponentAudio);
-        // //     // audio.play(true);
-        // // }
         private Created(event: Event): void {
             const audio: f.Audio = new f.Audio(`Audio/${this._soundFileName}.mp3`);
             const soundComponent: f.ComponentAudio = new f.ComponentAudio(audio);

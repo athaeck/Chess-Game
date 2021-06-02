@@ -177,8 +177,13 @@ var ChessGame;
             return this._place;
         }
         MoveFigure(movementController) {
+            this.addComponent(movementController);
         }
         DeleteMovementController() {
+            console.log();
+        }
+        GetChessFigureMovement() {
+            return this._move;
         }
     }
     ChessGame.ChessFigure = ChessFigure;

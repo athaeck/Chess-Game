@@ -27,6 +27,7 @@ namespace ChessGame {
     let _chessPlayer: ChessPlayer;
     let _maxTime: number = 120;
     let _selectionControl: SelectionControl;
+    let _startUserPlayer: UserType = UserType.PLAYER;
     // let _playerFigures: f.Node[] = [];
     // let _enemyFigures: f.Node[] = [];
     // let _currentFigure: f.Node;
@@ -47,7 +48,7 @@ namespace ChessGame {
 
         StartChessMatch();
     }
-    function StartChessMatch(): void{
+    function StartChessMatch(): void {
         InitWorld();
         InitCamera();
         InitAvatar();
@@ -61,8 +62,8 @@ namespace ChessGame {
 
         Hud.start();
 
-        _canvas.addEventListener("mousemove", mouseMove);
-        _canvas.addEventListener("click", _canvas.requestPointerLock);
+        // _canvas.addEventListener("mousemove", mouseMove);
+        // _canvas.addEventListener("click", _canvas.requestPointerLock);
         console.log(_root);
         _inputController.ResetTimer();
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
@@ -75,7 +76,8 @@ namespace ChessGame {
         _camera._node.mtxLocal.rotateX(_event.movementY * _speed / 10);
     }
     function InitCamera(): void {
-        _cameraController = new CameraController();
+        // console.log(_startUserPlayer)
+        _cameraController = new CameraController(_startUserPlayer);
         const camera: Camera = {
             _node: new f.Node("Camera"),
             _componentCamera: new f.ComponentCamera()
@@ -83,6 +85,7 @@ namespace ChessGame {
         camera._node.addComponent(camera._componentCamera);
         camera._node.addComponent(new f.ComponentTransform(new f.Matrix4x4));
         camera._node.addComponent(_cameraController);
+        // camera._node.mtxWorld.translation = new f.Vector3(0, 0, 0);
         // camera._componentCamera.mtxPivot.lookAt(_places[0].mtxLocal.translation);
         _camera = camera;
         // _camera._node
@@ -97,7 +100,8 @@ namespace ChessGame {
         player._rigidbody.rotationInfluenceFactor = f.Vector3.ZERO();
         player._rigidbody.friction = 2;
 
-        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 10, -10))));
+        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0))));
+        // player._avatar.getComponent(f.ComponentTransform).mtxLocal.lookAt(new f.Vector3(0,0,0));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
 
@@ -139,19 +143,19 @@ namespace ChessGame {
         const CHESSPLAYER: ChessPlayer = {
             player,
             enemy
-        }
+        };
         _chessPlayer = CHESSPLAYER;
         // console.log(_places);-
     }
 
     function InitController(): void {
-        
+
         _selectionControl = new SelectionControl();
         // _cameraController = new CameraController();
-        _inputController = new InputController(_places, _chessPlayer, _cameraController, _maxTime,_selectionControl);
-        
+        _inputController = new InputController(_places, _chessPlayer, _cameraController, _maxTime, _selectionControl);
+
         _root.appendChild(_selectionControl);
-        
+
     }
     function HandleGame(event: Event): void {
         _inputController.HandleInput();

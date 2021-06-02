@@ -20,6 +20,7 @@ var ChessGame;
     let _chessPlayer;
     let _maxTime = 120;
     let _selectionControl;
+    let _startUserPlayer = ChessGame.UserType.PLAYER;
     // let _playerFigures: f.Node[] = [];
     // let _enemyFigures: f.Node[] = [];
     // let _currentFigure: f.Node;
@@ -46,8 +47,8 @@ var ChessGame;
         _viewport = new f.Viewport();
         _viewport.initialize("Viewport", _root, _camera._componentCamera, _canvas);
         ChessGame.Hud.start();
-        _canvas.addEventListener("mousemove", mouseMove);
-        _canvas.addEventListener("click", _canvas.requestPointerLock);
+        // _canvas.addEventListener("mousemove", mouseMove);
+        // _canvas.addEventListener("click", _canvas.requestPointerLock);
         console.log(_root);
         _inputController.ResetTimer();
         f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, HandleGame);
@@ -58,7 +59,8 @@ var ChessGame;
         _camera._node.mtxLocal.rotateX(_event.movementY * _speed / 10);
     }
     function InitCamera() {
-        _cameraController = new ChessGame.CameraController();
+        // console.log(_startUserPlayer)
+        _cameraController = new ChessGame.CameraController(_startUserPlayer);
         const camera = {
             _node: new f.Node("Camera"),
             _componentCamera: new f.ComponentCamera()
@@ -66,6 +68,7 @@ var ChessGame;
         camera._node.addComponent(camera._componentCamera);
         camera._node.addComponent(new f.ComponentTransform(new f.Matrix4x4));
         camera._node.addComponent(_cameraController);
+        // camera._node.mtxWorld.translation = new f.Vector3(0, 0, 0);
         // camera._componentCamera.mtxPivot.lookAt(_places[0].mtxLocal.translation);
         _camera = camera;
         // _camera._node
@@ -79,7 +82,8 @@ var ChessGame;
         player._rigidbody.restitution = 0.5;
         player._rigidbody.rotationInfluenceFactor = f.Vector3.ZERO();
         player._rigidbody.friction = 2;
-        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 10, -10))));
+        player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0))));
+        // player._avatar.getComponent(f.ComponentTransform).mtxLocal.lookAt(new f.Vector3(0,0,0));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
         ƒ.AudioManager.default.listenTo(_root);

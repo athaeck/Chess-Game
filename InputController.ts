@@ -6,6 +6,9 @@ namespace ChessGame {
     export type ManageUserTimer = {
         [key in UserType]: UserTime;
     };
+    export interface Movement {
+        transform: f.ComponentTransform;
+    }
     export class InputController {
         private _places: f.Node[];
         private _player: ChessPlayer;
@@ -18,8 +21,10 @@ namespace ChessGame {
         private _currentChessFigureIndex: number = 0;
         private _clickable: boolean = true;
         private _selectionControl: SelectionControl;
+        private _movementIndex: number = 0;
+        private _movements: Movement[];
+        private x: number = 0;
         constructor(places: f.Node[], player: ChessPlayer, cameraController: CameraController, maxTime: number, selectionControl: SelectionControl) {
-            console.log("");
             this._selectionControl = selectionControl;
             this._places = places;
             this._player = player;
@@ -35,6 +40,7 @@ namespace ChessGame {
         public HandleInput(): void {
             this.HandleSelectionControl();
             this.UpdateTimer();
+            this.HandleCameraPosition();
             if (this._currentPlayer === UserType.PLAYER) {
                 if (this._clickable && ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D])) {
                     this._currentChessFigureIndex++;
@@ -54,15 +60,11 @@ namespace ChessGame {
                 }
 
 
+            } else {
+                console.log()
             }
-            
+            this.GetChessFigureMovements();
 
-           
-            // if (this._currentChessFigureIndex <= this._player[this._currentPlayer].getChildren().length - 1 && this._currentChessFigureIndex >= 0) {
-            //     // this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex].getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
-            //     // this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex].getComponent(f.ComponentRigidbody).setVelocity(new f.Vector3(0, 5, 0));
-            //     // ƒ.Time.game.setTimer(100, 1, () => this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex].getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.KINEMATIC);
-            // }
         }
         public ResetTimer(): void {
             this._userTimer = {
@@ -71,9 +73,6 @@ namespace ChessGame {
             };
             this._currentUseTime = 0;
         }
-        // private HandleEvents(): void{
-        //     this._currentChessFigureIndex.
-        // }
         private HandleSoundController(soundType: SoundType): void {
             const index: number = this._currentChessFigureIndex;
             let soundFile: string = "";
@@ -92,13 +91,12 @@ namespace ChessGame {
             if (this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex]) {
                 const _currentFigure: ChessFigure = this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex] as ChessFigure;
                 const _currentPlace: f.Node = _currentFigure.GetPlace();
-                const v3: f.Vector3 = new f.Vector3(_currentPlace.mtxLocal.translation.x, 3, _currentPlace.mtxLocal.translation.z)
+                const v3: f.Vector3 = new f.Vector3(_currentPlace.mtxLocal.translation.x, 3, _currentPlace.mtxLocal.translation.z);
                 this._selectionControl.mtxLocal.translation = v3;
-                
+
             }
         }
         private CheckIfValidIndex(): void {
-            // console.log(this._currentChessFigureIndex);
             if (this._currentChessFigureIndex > this._player[this._currentPlayer].getChildren().length - 1) {
                 this._currentChessFigureIndex = 0;
             }
@@ -122,6 +120,20 @@ namespace ChessGame {
             this._userTimer[this._currentPlayer]._usedTime = r - t;
             this._currentUseTime = 0;
             this._currentChessFigureIndex = 0;
+            this._cameraController.UpdatePlayer(this._currentPlayer);
+        }
+        private HandleCameraPosition(): void {
+            const _currentFigure: ChessFigure = this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex] as ChessFigure;
+            const _transform: f.ComponentTransform = _currentFigure.getComponent(f.ComponentTransform);
+            this._cameraController.UpdatePosition(_transform);
+        }
+        private GetChessFigureMovements(): void {
+            const currentChessFigure: ChessFigure = this._player[this._currentPlayer].getChildren()[this._currentChessFigureIndex] as ChessFigure;
+            const chessPlayerSetting: ChessPlayerSetting = currentChessFigure.GetChessFigureMovement();
+            if (this.x === 0) {
+                console.log(chessPlayerSetting);
+                this.x++;
+            }
         }
 
     }
