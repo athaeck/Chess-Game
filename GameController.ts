@@ -152,7 +152,7 @@ namespace ChessGame {
 
         _selectionControl = new SelectionControl();
         // _cameraController = new CameraController();
-        _inputController = new InputController(_places, _chessPlayer, _cameraController, _maxTime, _selectionControl);
+        _inputController = new InputController(_places, _chessPlayer, _cameraController, _maxTime, _selectionControl, _startUserPlayer);
 
         _root.appendChild(_selectionControl);
 

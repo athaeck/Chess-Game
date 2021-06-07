@@ -4,14 +4,14 @@ namespace ChessGame {
         _fieldsX: number;
         _fieldsZ: number;
         _scalable: boolean;
-        _movementBackwards: boolean;
+        // _movementBackwards: boolean;
         _initScale: boolean;
     }
     export interface Attack {
         _fieldsX: number;
         _fieldsZ: number;
         _scalable: boolean;
-        _movementBackwards: boolean;
+        // _movementBackwards: boolean;
     }
     export interface ChessPlayerSetting {
         _movement:  Movement[];

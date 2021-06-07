@@ -131,7 +131,7 @@ var ChessGame;
     function InitController() {
         _selectionControl = new ChessGame.SelectionControl();
         // _cameraController = new CameraController();
-        _inputController = new ChessGame.InputController(_places, _chessPlayer, _cameraController, _maxTime, _selectionControl);
+        _inputController = new ChessGame.InputController(_places, _chessPlayer, _cameraController, _maxTime, _selectionControl, _startUserPlayer);
         _root.appendChild(_selectionControl);
     }
     function HandleGame(event) {

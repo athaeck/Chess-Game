@@ -7,13 +7,23 @@ namespace ChessGame {
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 }, {
                     _fieldsX: 0,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: 0,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 0,
                     _initScale: false,
                     _scalable: true
                 }
@@ -23,18 +33,28 @@ namespace ChessGame {
             _attack: null,
             _movement: [
                 {
-                    _fieldsX: 3,
+                    _fieldsX: 2,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
-                    _scalable: true
+                    _scalable: false
                 },
                 {
-                    _fieldsX: 3,
+                    _fieldsX: 2,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
                     _initScale: false,
-                    _scalable: true
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -2,
+                    _fieldsZ: 1,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -2,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: false
                 }
             ]
         },
@@ -44,14 +64,24 @@ namespace ChessGame {
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 1,
                     _initScale: false,
                     _scalable: true
                 }
@@ -63,27 +93,47 @@ namespace ChessGame {
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 }, {
                     _fieldsX: 0,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 0,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: 0,
+                    _fieldsZ: -1,
                     _initScale: false,
                     _scalable: true
                 }
@@ -95,27 +145,47 @@ namespace ChessGame {
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: false
                 }, {
                     _fieldsX: 0,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: false
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: false
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 1,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 0,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: 0,
+                    _fieldsZ: -1,
                     _initScale: false,
                     _scalable: false
                 }
@@ -126,23 +196,21 @@ namespace ChessGame {
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: false,
 
-                    _scalable: true
+                    _scalable: false
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: false,
 
-                    _scalable: true
+
+                    _scalable: false
                 }
             ],
             _movement: [
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: false,
                     _initScale: true,
                     _scalable: false
                 }
@@ -189,6 +257,12 @@ namespace ChessGame {
         }
         public GetChessFigureMovement(): ChessPlayerSetting {
             return this._move;
+        }
+        public UpdateInitScale(): void {
+            this._move._movement[0]._initScale = false;
+        }
+        public GetUser(): UserType{
+            return this._user;
         }
     }
 }

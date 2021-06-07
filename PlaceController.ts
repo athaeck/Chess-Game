@@ -10,7 +10,15 @@ namespace ChessGame {
             return this._chessFigure;
         }
         public SetChessFigure(chessFigure: ChessFigure = null): void {
+            chessFigure.SetPlace(this?.getContainer());
             this._chessFigure = chessFigure;
+        }
+        public IsChessFigureNull(): boolean {
+            return this._chessFigure === null ? true : false;
+        }
+        public RemoveChessFigure(): void {
+            this._chessFigure.SetPlace(null);
+            this._chessFigure = null;
         }
     }
 }

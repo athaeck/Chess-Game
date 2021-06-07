@@ -11,7 +11,15 @@ var ChessGame;
             return this._chessFigure;
         }
         SetChessFigure(chessFigure = null) {
+            chessFigure.SetPlace(this?.getContainer());
             this._chessFigure = chessFigure;
+        }
+        IsChessFigureNull() {
+            return this._chessFigure === null ? true : false;
+        }
+        RemoveChessFigure() {
+            this._chessFigure.SetPlace(null);
+            this._chessFigure = null;
         }
     }
     ChessGame.PlaceController = PlaceController;

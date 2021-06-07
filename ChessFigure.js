@@ -9,13 +9,23 @@ var ChessGame;
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 }, {
                     _fieldsX: 0,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: 0,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 0,
                     _initScale: false,
                     _scalable: true
                 }
@@ -25,18 +35,28 @@ var ChessGame;
             _attack: null,
             _movement: [
                 {
-                    _fieldsX: 3,
+                    _fieldsX: 2,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
-                    _scalable: true
+                    _scalable: false
                 },
                 {
-                    _fieldsX: 3,
+                    _fieldsX: 2,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
                     _initScale: false,
-                    _scalable: true
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -2,
+                    _fieldsZ: 1,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -2,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: false
                 }
             ]
         },
@@ -46,14 +66,24 @@ var ChessGame;
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 1,
                     _initScale: false,
                     _scalable: true
                 }
@@ -65,27 +95,47 @@ var ChessGame;
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 }, {
                     _fieldsX: 0,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: true
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 1,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 0,
+                    _initScale: false,
+                    _scalable: true
+                },
+                {
+                    _fieldsX: 0,
+                    _fieldsZ: -1,
                     _initScale: false,
                     _scalable: true
                 }
@@ -97,27 +147,47 @@ var ChessGame;
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: false
                 }, {
                     _fieldsX: 0,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: false
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: true,
                     _initScale: false,
                     _scalable: false
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: true,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: -1,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 1,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: -1,
+                    _fieldsZ: 0,
+                    _initScale: false,
+                    _scalable: false
+                },
+                {
+                    _fieldsX: 0,
+                    _fieldsZ: -1,
                     _initScale: false,
                     _scalable: false
                 }
@@ -128,21 +198,18 @@ var ChessGame;
                 {
                     _fieldsX: 1,
                     _fieldsZ: 1,
-                    _movementBackwards: false,
-                    _scalable: true
+                    _scalable: false
                 },
                 {
                     _fieldsX: 1,
                     _fieldsZ: -1,
-                    _movementBackwards: false,
-                    _scalable: true
+                    _scalable: false
                 }
             ],
             _movement: [
                 {
                     _fieldsX: 1,
                     _fieldsZ: 0,
-                    _movementBackwards: false,
                     _initScale: true,
                     _scalable: false
                 }
@@ -184,6 +251,12 @@ var ChessGame;
         }
         GetChessFigureMovement() {
             return this._move;
+        }
+        UpdateInitScale() {
+            this._move._movement[0]._initScale = false;
+        }
+        GetUser() {
+            return this._user;
         }
     }
     ChessGame.ChessFigure = ChessFigure;

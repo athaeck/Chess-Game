@@ -12,8 +12,6 @@ var ChessGame;
         UpdatePosition(currentChessFigure) {
             this._transformComponent.mtxLocal.lookAt(currentChessFigure.mtxLocal.translation, new f.Vector3(0, 1, 0));
             if (this.x === 0) {
-                console.log(currentChessFigure);
-                console.log(this._transformComponent);
                 this.x++;
             }
         }
