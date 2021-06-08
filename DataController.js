@@ -1,22 +1,17 @@
 "use strict";
-//    import * as ChessPlayerSettings from "./data/ChessFigureSetting.json";
 var ChessGame;
 (function (ChessGame) {
-    // import * as ChessPlayerSettings from "./data/ChessFigureSetting.json";
     class DataController {
-        // private _chessFigureSetting: string = "./data/ChessFigureSetting.json"
         constructor() {
+            this._chessFigureSetting = "./data/ChessFigureSetting.json";
         }
         static get Instance() {
             return this._instance || (this._instance = new this());
         }
-        GetMovementData(name) {
-            // const movement: ChessPlayerSettings = requi
-            // console.log(ChessPlayerSettings)
-            const setting = ChessPlayerSettings;
-            console.log(setting);
-            return setting[name];
-            // return null;
+        async GetMovementData(name) {
+            let res = await fetch(this._chessFigureSetting);
+            let resBody = await res.json();
+            return resBody[name];
         }
     }
     ChessGame.DataController = DataController;

@@ -2,6 +2,7 @@
 var ChessGame;
 (function (ChessGame) {
     var fui = FudgeUserInterface;
+    var f = FudgeCore;
     class GameState extends f.Mutable {
         constructor() {
             super(...arguments);

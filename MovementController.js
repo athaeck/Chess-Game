@@ -25,6 +25,9 @@ var ChessGame;
                 case "Springer":
                     // this._body.applyLinearImpulse(new f.Vector3(0, 5, 0));
                     break;
+                case "Bauer":
+                    this._parent.UpdateInitScale();
+                    break;
                 default:
                     break;
             }
@@ -39,15 +42,6 @@ var ChessGame;
                 this.getContainer().removeComponent(this);
             }, 1000);
             // });
-        }
-        CheckReachedDestination() {
-            const current = this.getContainer()?.getComponent(f.ComponentTransform);
-            if (ChessGame.Round(current.mtxLocal.translation.x, 10) === ChessGame.Round(this._target.mtxLocal.translation.x, 10) && ChessGame.Round(current.mtxLocal.translation.z, 10) === ChessGame.Round(this._target.mtxLocal.translation.z, 10)) {
-                return false;
-            }
-            else {
-                return true;
-            }
         }
     }
     ChessGame.MovementController = MovementController;

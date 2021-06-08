@@ -30,6 +30,9 @@ namespace ChessGame {
                 case "Springer":
                     // this._body.applyLinearImpulse(new f.Vector3(0, 5, 0));
                     break;
+                case "Bauer":
+                    this._parent.UpdateInitScale();
+                    break;
                 default:
                     break;
             }
@@ -48,13 +51,13 @@ namespace ChessGame {
                
             // });
         }
-        private CheckReachedDestination(): boolean {
-            const current: f.ComponentTransform = this.getContainer()?.getComponent(f.ComponentTransform);
-            if (Round(current.mtxLocal.translation.x, 10) === Round(this._target.mtxLocal.translation.x, 10) && Round(current.mtxLocal.translation.z, 10) === Round(this._target.mtxLocal.translation.z, 10)) {
-                return false;
-            } else {
-                return true;
-            }
-        }
+        // private CheckReachedDestination(): boolean {
+        //     const current: f.ComponentTransform = this.getContainer()?.getComponent(f.ComponentTransform);
+        //     if (Round(current.mtxLocal.translation.x, 10) === Round(this._target.mtxLocal.translation.x, 10) && Round(current.mtxLocal.translation.z, 10) === Round(this._target.mtxLocal.translation.z, 10)) {
+        //         return false;
+        //     } else {
+        //         return true;
+        //     }
+        // }
     }
 }

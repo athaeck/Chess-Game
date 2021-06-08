@@ -51,6 +51,30 @@
                  "_fieldsZ": -1,
                  "_initScale": false,
                  "_scalable": false
+             },
+             {
+                 "_fieldsX": -1,
+                 "_fieldsZ": -2,
+                 "_initScale": false,
+                 "_scalable": false
+             },
+             {
+                 "_fieldsX": -1,
+                 "_fieldsZ": 2,
+                 "_initScale": false,
+                 "_scalable": false
+             },
+             {
+                 "_fieldsX": 1,
+                 "_fieldsZ": -2,
+                 "_initScale": false,
+                 "_scalable": false
+             },
+             {
+                 "_fieldsX": 1,
+                 "_fieldsZ": 2,
+                 "_initScale": false,
+                 "_scalable": false
              }
          ]
      },

@@ -216,86 +216,87 @@ namespace ChessGame {
             const chessPlayerSetting: ChessPlayerSetting = currentChessFigure.GetChessFigureMovement();
             const currentPlaceTransform: f.ComponentTransform = currentChessFigure.GetPlace().getComponent(f.ComponentTransform);
             const currentPlace: f.Vector3 = currentPlaceTransform.mtxLocal.translation;
-            if (this._isMovement) {
-                // let currentMove: number = 0;
-                for (const movement of chessPlayerSetting._movement) {
-                    if (!movement._scalable) {
-                        if (movement._initScale) {
-                            for (let i: number = 1; i < 3; i++) {
-                                const targetPosition: f.Vector3 = new f.Vector3(Round(direction * i * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * i * movement._fieldsZ + currentPlace.z, 10));
+            if (chessPlayerSetting != undefined) {
+                if (this._isMovement) {
+                    for (const movement of chessPlayerSetting._movement) {
+                        if (!movement._scalable) {
+                            if (movement._initScale) {
+                                for (let i: number = 1; i < 3; i++) {
+                                    const targetPosition: f.Vector3 = new f.Vector3(Round(direction * i * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * i * movement._fieldsZ + currentPlace.z, 10));
+                                    for (const place of this._places) {
+                                        const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
+                                        if (Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                            const placeController: PlaceController = place.getComponent(PlaceController);
+                                            if (placeController.IsChessFigureNull()) {
+                                                POSSIBLEMOVEMENTS.push(placeTrans);
+                                            }
+                                            if (!placeController.IsChessFigureNull()) {
+                                                if (placeController.GetChessFigure().GetUser() !== this._currentPlayer) {
+                                                    POSSIBLEMOVEMENTS.push(placeTrans);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            } else {
+                                const targetPosition: f.Vector3 = new f.Vector3(Round(direction * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * movement._fieldsZ + currentPlace.z, 10));
                                 for (const place of this._places) {
                                     const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
                                     if (Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
                                         const placeController: PlaceController = place.getComponent(PlaceController);
-                                        if (placeController.IsChessFigureNull()) {
-                                            POSSIBLEMOVEMENTS.push(placeTrans);
-                                        }
                                         if (!placeController.IsChessFigureNull()) {
                                             if (placeController.GetChessFigure().GetUser() !== this._currentPlayer) {
                                                 POSSIBLEMOVEMENTS.push(placeTrans);
                                             }
                                         }
-                                    }
-                                }
-                            }
-                        } else {
-                            const targetPosition: f.Vector3 = new f.Vector3(Round(direction * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * movement._fieldsZ + currentPlace.z, 10));
-                            for (const place of this._places) {
-                                const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
-                                if (Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
-                                    const placeController: PlaceController = place.getComponent(PlaceController);
-                                    if (!placeController.IsChessFigureNull()) {
-                                        if (placeController.GetChessFigure().GetUser() !== this._currentPlayer) {
+                                        if (placeController.IsChessFigureNull()) {
                                             POSSIBLEMOVEMENTS.push(placeTrans);
                                         }
                                     }
-                                    if (placeController.IsChessFigureNull()) {
-                                        POSSIBLEMOVEMENTS.push(placeTrans);
-                                    }
                                 }
-                            }
 
-                        }
-                    } else {
-                        let lastFieldReached: boolean = false;
-                        let scale: number = 1;
-                        while (!lastFieldReached) {
-                            const targetPosition: f.Vector3 = new f.Vector3(Round(direction * scale * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * scale * movement._fieldsZ + currentPlace.z, 10));
-                            let hit: boolean = false;
-                            for (const place of this._places) {
-                                const placeTransform: f.ComponentTransform = place.getComponent(f.ComponentTransform);
-                                if (Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
-                                    hit = true;
-                                }
                             }
-                            if (!hit) {
-                                lastFieldReached = true;
-                            } else {
+                        } else {
+                            let lastFieldReached: boolean = false;
+                            let scale: number = 1;
+                            while (!lastFieldReached) {
+                                const targetPosition: f.Vector3 = new f.Vector3(Round(direction * scale * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * scale * movement._fieldsZ + currentPlace.z, 10));
+                                let hit: boolean = false;
                                 for (const place of this._places) {
                                     const placeTransform: f.ComponentTransform = place.getComponent(f.ComponentTransform);
                                     if (Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
-                                        const placeController: PlaceController = place.getComponent(PlaceController);
-                                        console.log(placeController);
-                                        if (!placeController.IsChessFigureNull()) {
-                                            if (placeController.GetChessFigure().GetUser() !== this._currentPlayer) {
+                                        hit = true;
+                                    }
+                                }
+                                if (!hit) {
+                                    lastFieldReached = true;
+                                } else {
+                                    for (const place of this._places) {
+                                        const placeTransform: f.ComponentTransform = place.getComponent(f.ComponentTransform);
+                                        if (Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                            const placeController: PlaceController = place.getComponent(PlaceController);
+                                            console.log(placeController);
+                                            if (!placeController.IsChessFigureNull()) {
+                                                if (placeController.GetChessFigure().GetUser() !== this._currentPlayer) {
+                                                    POSSIBLEMOVEMENTS.push(placeTransform);
+                                                }
+                                                lastFieldReached = true;
+                                                break;
+                                            }
+                                            if (placeController.IsChessFigureNull()) {
                                                 POSSIBLEMOVEMENTS.push(placeTransform);
                                             }
-                                            lastFieldReached = true;
-                                            break;
-                                        }
-                                        if (placeController.IsChessFigureNull()) {
-                                            POSSIBLEMOVEMENTS.push(placeTransform);
                                         }
                                     }
                                 }
+                                scale++;
                             }
-                            scale++;
                         }
+                        // currentMove++;
                     }
-                    // currentMove++;
+                } else {
+                    console.log(".....");
                 }
-            } else {
-                console.log(".....");
             }
             this._movements = POSSIBLEMOVEMENTS;
             this._attacks = POSSIBLEATTACKS;

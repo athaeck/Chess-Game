@@ -63,18 +63,18 @@ namespace ChessGame {
         Hud.start();
 
         // _canvas.addEventListener("mousemove", mouseMove);
-        // _canvas.addEventListener("click", _canvas.requestPointerLock);
+        _canvas.addEventListener("click", _canvas.requestPointerLock);
         console.log(_root);
         _inputController.ResetTimer();
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
         f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
     }
-    function mouseMove(_event: MouseEvent): void {
+    // function mouseMove(_event: MouseEvent): void {
 
 
-        _player._rigidbody.rotateBody(f.Vector3.Y(-1 * _event.movementX * _speed / 10));
-        _camera._node.mtxLocal.rotateX(_event.movementY * _speed / 10);
-    }
+    //     _player._rigidbody.rotateBody(f.Vector3.Y(-1 * _event.movementX * _speed / 10));
+    //     _camera._node.mtxLocal.rotateX(_event.movementY * _speed / 10);
+    // }
     function InitCamera(): void {
         // console.log(_startUserPlayer)
         _cameraController = new CameraController(_startUserPlayer);
