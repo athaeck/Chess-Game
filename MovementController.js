@@ -29,24 +29,6 @@ var ChessGame;
                     break;
             }
             this._body.translateBody(toTranslate);
-            // this._body.
-            // this._body.applyLinearImpulse(toTranslate);
-            // this._body.
-            // this.CheckReachedDestination();
-            // let bool: boolean = true;
-            // while (bool) {
-            //     // console.log("moving");
-            //     bool = this.CheckReachedDestination();
-            // }
-            // this._body.physicsType = f.PHYSICS_TYPE.KINEMATIC;
-            // const newPlaceController: PlaceController = this._target.getContainer().getComponent(PlaceController);
-            // const currentPlaceController: PlaceController = this._parent.GetPlace().getComponent(PlaceController);
-            // currentPlaceController.RemoveChessFigure();
-            // newPlaceController.SetChessFigure(this._parent);
-            // console.log(this._places);
-            // this.getContainer().removeComponent(this);
-            // f.Time.game.s(2000, 0, () => {
-            // let self: any = this;
             setTimeout(() => {
                 this._body.physicsType = f.PHYSICS_TYPE.KINEMATIC;
                 const newPlaceController = this._target.getContainer().getComponent(ChessGame.PlaceController);

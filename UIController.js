@@ -1,8 +1,8 @@
 "use strict";
 var ChessGame;
 (function (ChessGame) {
-    var ƒui = FudgeUserInterface;
-    class GameState extends ƒ.Mutable {
+    var fui = FudgeUserInterface;
+    class GameState extends f.Mutable {
         constructor() {
             super(...arguments);
             // public hits: number = 0;
@@ -16,7 +16,7 @@ var ChessGame;
     class Hud {
         static start() {
             let domHud = document.querySelector("div#ui-wrapper");
-            Hud.controller = new ƒui.Controller(ChessGame.gameState, domHud);
+            Hud.controller = new fui.Controller(ChessGame.gameState, domHud);
             Hud.controller.updateUserInterface();
         }
     }

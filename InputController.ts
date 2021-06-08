@@ -6,20 +6,6 @@ namespace ChessGame {
     export type ManageUserTimer = {
         [key in UserType]: UserTime;
     };
-    // class SelectedMovement extends GameObject {
-    //     constructor() {
-    //         super()
-    //         // super("CurrentMovementSelected", 1, f.PHYSICS_TYPE.KINEMATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.GROUP_4, new f.MeshSphere);
-    //         // const mesh: f.ComponentMesh = this.getComponent(f.ComponentMesh);
-    //         // // mesh.mtxPivot.scale(new f.Vector3(0.3, 1, 0.3));
-    //         // // this.mtxLocal.translateY(5);
-    //         // // this.mtxLocal.translation.y = currentPosition.y;
-    //         // this.mtxLocal.rotateX(90);
-    //         // let materialSolidWhite: f.Material = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS("Blue")));
-    //         // let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(materialSolidWhite);
-    //         // this.addComponent(componentMaterial);
-    //     }
-    // }
     export class InputController {
         private _places: f.Node[];
         private _player: ChessPlayer;
@@ -84,14 +70,41 @@ namespace ChessGame {
                     this.SelectTimerReset();
                 }
             } else {
-                console.log("");
+                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_RIGHT])) {
+                    this._currentChessFigureIndex++;
+                    this.CheckIfValidIndex();
+                    this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
+                    this.PressTimerReset();
+                }
+                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_LEFT])) {
+                    this._currentChessFigureIndex--;
+                    this.CheckIfValidIndex();
+                    this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
+                    this.PressTimerReset();
+                }
+                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_UP])) {
+                    if (this._movements.length > 0) {
+                        this._movementIndex++;
+                    }
+                    this.CheckIfValidIndex();
+                    this.HandleSoundController(SoundType.SELECT_FIELD);
+                    this.SelectTimerReset();
+                }
+                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_DOWN])) {
+                    if (this._movements.length > 0) {
+                        this._movementIndex--;
+                    }
+                    this.CheckIfValidIndex();
+                    this.HandleSoundController(SoundType.SELECT_FIELD);
+                    this.SelectTimerReset();
+                }
             }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
                 this.Move();
                 this.SelectTimerReset();
                 setTimeout(() => {
                     this.GetChessFigureMovements();
-                }, 1001)
+                },         1001);
             }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.Q])) {
                 this._isMovement = true;
@@ -179,10 +192,10 @@ namespace ChessGame {
         }
         private ShowSelection(): void {
             if (this._movementIndex < this._movements.length) {
-                // const currentMovementPosition: f.Node = this._movements[this._movementIndex].getContainer();
+                const currentMovementPosition: f.Node = this._movements[this._movementIndex].getContainer();
                 // // const position: f.Vector3 = new f.Vector3(0, 30, 0);
                 // const select: SelectedMovement = new SelectedMovement();
-                // currentMovementPosition.addChild(select);
+                currentMovementPosition.addChild(new MovementSelection());
                 // f.Time.game.setTimer(1000, 1, () => currentMovementPosition.removeAllChildren());
             }
         }
