@@ -20,7 +20,7 @@ namespace ChessGame {
     export interface ChessPlayerSettings {
         [key: string]: ChessPlayerSetting;
     }
-    export type ChessPlayer = {
-        [key in UserType]: f.Node;
+    export type ChessPlayers = {
+        [key in UserType]: ChessPlayer;
     };
 }

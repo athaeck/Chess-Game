@@ -1,3 +1,4 @@
+///<reference path="./enum.ts"/>
 namespace ChessGame {
     import f = FudgeCore;
 
@@ -19,22 +20,51 @@ namespace ChessGame {
     let _camera: Camera;
     let _inputController: InputController;
     let _cameraController: CameraController;
-    let _gameTime: Number;
-    let _dragTime: Number;
-    let _speed: number = 1;
+    // let _gameTime: Number;
+    // let _dragTime: Number;
+    // let _speed: number = 1;
     let _places: f.Node[] = [];
     let _surface: f.Node;
-    let _chessPlayer: ChessPlayer;
-    let _maxTime: number = 120;
+    let _chessPlayer: ChessPlayers;
+    // let _maxTime: number = 120;
     let _selectionControl: SelectionControl;
     let _startUserPlayer: UserType = UserType.PLAYER;
-    // let _playerFigures: f.Node[] = [];
-    // let _enemyFigures: f.Node[] = [];
-    // let _currentFigure: f.Node;
 
     window.addEventListener("load", Start);
+    export class GameController {
+        private _inputController: InputController;
+        private _currentUser: UserType;
+        private _chessPlayer: ChessPlayers;
+        private _playerTimeController: TimeController;
+        constructor(chessPlayer: ChessPlayers, places: f.Node[],cameraController: CameraController, selctionController: SelectionControl) {
+            const random: number = new f.Random().getRange(0, 11);
+            this._chessPlayer = chessPlayer;
+            this._currentUser = random > 5 ? UserType.PLAYER : UserType.ENEMY;
+            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
+            this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser);
+        }
+        public HandleGame(): void{
+            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
+            this._inputController.UpdateCurrentUser(this._currentUser);
+            this._inputController.HandleInput();
+            this.HandleFinishMove();
+        }
+        private HandleFinishMove(): void{
+            if (this._inputController.GetSelectionState()) {
+                this._playerTimeController.StoppTimer();
+                switch (this._currentUser) {
+                    case UserType.PLAYER:
+                        this._currentUser = UserType.ENEMY;
+                        break;
+                    default:
+                        this._currentUser = UserType.PLAYER;
+                        break;
+                }
+                this._playerTimeController.StartTimer();
+            }
+        }
+    }
     async function Start(event: Event): Promise<void> {
-        // console.log()
         f.Physics.settings.debugMode = f.PHYSICS_DEBUGMODE.COLLIDERS;
         f.Physics.settings.debugDraw = true;
         f.Physics.settings.defaultRestitution = 0.5;
@@ -44,7 +74,7 @@ namespace ChessGame {
         await FudgeCore.Project.loadResourcesFromHTML();
         FudgeCore.Debug.log("Project:", FudgeCore.Project.resources);
         _root = <f.Graph>FudgeCore.Project.resources["Graph|2021-05-23T14:11:54.579Z|49352"];
-        // console.log(_root);
+
 
         StartChessMatch();
     }
@@ -62,21 +92,14 @@ namespace ChessGame {
 
         Hud.start();
 
-        // _canvas.addEventListener("mousemove", mouseMove);
+
         _canvas.addEventListener("click", _canvas.requestPointerLock);
         console.log(_root);
-        _inputController.ResetTimer();
+        // _inputController.ResetTimer();
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
         f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
     }
-    // function mouseMove(_event: MouseEvent): void {
-
-
-    //     _player._rigidbody.rotateBody(f.Vector3.Y(-1 * _event.movementX * _speed / 10));
-    //     _camera._node.mtxLocal.rotateX(_event.movementY * _speed / 10);
-    // }
     function InitCamera(): void {
-        // console.log(_startUserPlayer)
         _cameraController = new CameraController(_startUserPlayer);
         const camera: Camera = {
             _node: new f.Node("Camera"),
@@ -85,10 +108,7 @@ namespace ChessGame {
         camera._node.addComponent(camera._componentCamera);
         camera._node.addComponent(new f.ComponentTransform(new f.Matrix4x4));
         camera._node.addComponent(_cameraController);
-        // camera._node.mtxWorld.translation = new f.Vector3(0, 0, 0);
-        // camera._componentCamera.mtxPivot.lookAt(_places[0].mtxLocal.translation);
         _camera = camera;
-        // _camera._node
     }
     function InitAvatar(): void {
         const player: Player = {
@@ -101,7 +121,6 @@ namespace ChessGame {
         player._rigidbody.friction = 2;
 
         player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0))));
-        // player._avatar.getComponent(f.ComponentTransform).mtxLocal.lookAt(new f.Vector3(0,0,0));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
 
@@ -114,9 +133,11 @@ namespace ChessGame {
         surface.addComponent(new ƒ.ComponentRigidbody(0, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT));
         _surface = surface;
         const figures: f.Node = _root.getChildrenByName("Figures")[0];
-        const player: f.Node = figures.getChildrenByName("Player")[0];
-        const enemy: f.Node = figures.getChildrenByName("Enemy")[0];
+        const playerF: f.Node = figures.getChildrenByName("Player")[0];
+        const enemyF: f.Node = figures.getChildrenByName("Enemy")[0];
         const places: f.Node = _root.getChildrenByName("Places")[0];
+        const player: ChessPlayer = new ChessPlayer(playerF, UserType.PLAYER, new TimeController())
+        const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, new TimeController())
         _places = places.getChildren();
         for (let place of _places) {
             const rigidbody: f.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);
@@ -127,88 +148,41 @@ namespace ChessGame {
         for (let i: number = 0; i < 16; i++) {
             const place: f.Node = _places[i];
             const placeController: PlaceController = place.getComponent(PlaceController);
-            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[i], 1, f.PHYSICS_TYPE.KINEMATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.PLAYER);
+            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[i], 1, f.PHYSICS_TYPE.KINEMATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, player);
             placeController.SetChessFigure(chessFigure);
-            player.addChild(chessFigure);
+            playerF.addChild(chessFigure);
         }
         let index: number = 0;
         for (let i: number = _places.length - 1; i > _places.length - 17; i--) {
             const place: f.Node = _places[i];
             const placeController: PlaceController = place.getComponent(PlaceController);
-            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[index], 1, f.PHYSICS_TYPE.KINEMATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, UserType.ENEMY);
+            const chessFigure: ChessFigure = new ChessFigure(CHESSFIGURES[index], 1, f.PHYSICS_TYPE.KINEMATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT, place, enemy);
             placeController.SetChessFigure(chessFigure);
-            enemy.addChild(chessFigure);
+            enemyF.addChild(chessFigure);
             index++;
         }
-        const CHESSPLAYER: ChessPlayer = {
+
+        const CHESSPLAYER: ChessPlayers = {
             player,
-            enemy
+            enemy 
         };
         _chessPlayer = CHESSPLAYER;
-        // console.log(_places);-
     }
 
     function InitController(): void {
 
         _selectionControl = new SelectionControl();
         // _cameraController = new CameraController();
-        _inputController = new InputController(_places, _chessPlayer, _cameraController, _maxTime, _selectionControl, _startUserPlayer);
+        // _inputController = new InputController(_places, _chessPlayer, _cameraController, _selectionControl);
 
         _root.appendChild(_selectionControl);
 
     }
     function HandleGame(event: Event): void {
-        _inputController.HandleInput();
+        // _inputController.HandleInput();
         ƒ.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
         _viewport.draw();
         // f.Physics.settings.debugDraw = true;
     }
 
 }
-
-
-
-
-// <script>(function (_graphId) {
-//                 window.addEventListener("load", init);
-//                 // show dialog for startup
-//                 let dialog;
-//                 function init(_event) {
-//                     dialog = document.querySelector("dialog");
-//                     dialog.addEventListener("click", function (_event) {
-//                         dialog.close();
-//                         startInteractiveViewport();
-//                     });
-//                     dialog.showModal();
-//                 }
-//                 // setup and start interactive viewport
-//                 async function startInteractiveViewport() {
-//                     // load resources referenced in the link-tag
-//                     await FudgeCore.Project.loadResourcesFromHTML();
-//                     FudgeCore.Debug.log("Project:", FudgeCore.Project.resources);
-//                     // pick the graph to show
-//                     let graph = FudgeCore.Project.resources[_graphId];
-//                     FudgeCore.Debug.log("Graph:", graph);
-//                     // setup the viewport
-//                     let cmpCamera = new FudgeCore.ComponentCamera();
-//                     let canvas = document.querySelector("canvas");
-//                     let viewport = new FudgeCore.Viewport();
-//                     viewport.initialize("InteractiveViewport", graph, cmpCamera, canvas);
-//                     FudgeCore.Debug.log("Viewport:", viewport);
-//                     // hide the cursor when interacting, also suppressing right-click menu
-//                     canvas.addEventListener("mousedown", canvas.requestPointerLock);
-//                     canvas.addEventListener("mouseup", function () { document.exitPointerLock(); });
-//                     // make the camera interactive (complex method in FudgeAid)
-//                     FudgeAid.Viewport.expandCameraToInteractiveOrbit(viewport);
-//                     // setup audio
-//                     let cmpListener = new ƒ.ComponentAudioListener();
-//                     cmpCamera.getContainer().addComponent(cmpListener);
-//                     FudgeCore.AudioManager.default.listenWith(cmpListener);
-//                     FudgeCore.AudioManager.default.listenTo(graph);
-//                     FudgeCore.Debug.log("Audio:", FudgeCore.AudioManager.default);
-//                     // draw viewport once for immediate feedback
-//                     viewport.draw();
-//                     canvas.dispatchEvent(new CustomEvent("interactiveViewportStarted", { bubbles: true, detail: viewport }));
-//                 }
-//             })("Graph|2021-05-23T14:11:54.579Z|49352");
-// </script>
