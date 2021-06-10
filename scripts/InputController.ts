@@ -1,20 +1,11 @@
 namespace ChessGame {
     import f = FudgeCore;
-    // export interface UserTime {
-    //     _usedTime: number;
-    // }
-    // export type ManageUserTimer = {
-    //     [key in UserType]: UserTime;
-    // };
+
     export class InputController {
         private _places: f.Node[];
         private _player: ChessPlayers;
         private _cameraController: CameraController;
-        // private _currentUseTime: number = 0;
         private _currentPlayer: UserType;
-        // // private _userTimer: ManageUserTimer;
-        // private _maxTime: number;
-        // private _break: boolean = false;
         private _currentChessFigureIndex: number = 0;
         private _clickable: boolean = true;
         private _selectionControl: SelectionControl;
@@ -29,24 +20,22 @@ namespace ChessGame {
             this._places = places;
             this._player = player;
             this._cameraController = cameraController;
-            // this._userTimer = {
-            //     player: { _usedTime: maxTime },
-            //     enemy: { _usedTime: maxTime }
-            // };
-            // this._maxTime = maxTime;
             this._currentPlayer = user;
+            this._cameraController.UpdatePlayer(this._currentPlayer);
             this.GetChessFigureMovements();
+            console.log("InputController", this);
         }
-        public UpdateCurrentUser(user: UserType): void{
+        public UpdateCurrentUser(user: UserType): void {
             if (user !== this._currentPlayer) {
+                this._cameraController.UpdatePlayer(user);
                 this._selectionFinished = false;
             }
             this._currentPlayer = user;
         }
-        public GetCurrentUser(): UserType{
+        public GetCurrentUser(): UserType {
             return this._currentPlayer;
         }
-        public GetSelectionState(): boolean{
+        public GetSelectionState(): boolean {
             return this._selectionFinished;
         }
         public HandleInput(): void {
@@ -112,13 +101,7 @@ namespace ChessGame {
                     this.SelectTimerReset();
                 }
             }
-            if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
-                this.Move();
-                this.SelectTimerReset();
-                setTimeout(() => {
-                    this.GetChessFigureMovements();
-                },         1200);
-            }
+
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.Q])) {
                 this._isMovement = true;
                 this.PressTimerReset();
@@ -127,16 +110,17 @@ namespace ChessGame {
                 this._isMovement = false;
                 this.PressTimerReset();
             }
-            // console.log(f.EventWheel)
+            if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
+                this.Move();
+                this.SelectTimerReset();
+                setTimeout(() => {
+                    this.GetChessFigureMovements();
+                    this._selectionFinished = true;
+                    this._currentChessFigureIndex = 0;
+                }, 1200);
+            }
             this.ShowSelection();
         }
-        // public ResetTimer(): void {
-        //     this._userTimer = {
-        //         player: { _usedTime: this._maxTime },
-        //         enemy: { _usedTime: this._maxTime }
-        //     };
-        //     this._currentUseTime = 0;
-        // }
         private Move(): void {
             const currentFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
             const currentMove: f.ComponentTransform = this._movements[this._movementIndex];
@@ -165,7 +149,7 @@ namespace ChessGame {
             }
         }
         private CheckIfValidIndex(): void {
-            console.log(this._movements);
+            console.log("Available Movements", this._movements);
             if (this._currentChessFigureIndex > this._player[this._currentPlayer].GetFigures().length - 1) {
                 this._currentChessFigureIndex = 0;
             }
@@ -181,25 +165,6 @@ namespace ChessGame {
             }
 
         }
-        // private UpdateTimer(): void {
-        //     if (!this._break) {
-        //         this._currentUseTime++;
-        //         // this._currentUseTime = this._currentUseTime / 10;
-        //         gameState.currentTime = this._currentUseTime;
-        //     }
-        //     // this._userTimer[this._currentPlayer]._usedTime++:
-        //     // this._currentUseTime++;
-        //     // console.log(this._timer)
-        //     // gameState.time = this._timer;
-        // }
-        // private SwitchPlayerTimer(): void {
-        //     const t: number = this._currentUseTime;
-        //     const r: number = this._userTimer[this._currentPlayer]._usedTime;
-        //     this._userTimer[this._currentPlayer]._usedTime = r - t;
-        //     this._currentUseTime = 0;
-        //     this._currentChessFigureIndex = 0;
-        //     this._cameraController.UpdatePlayer(this._currentPlayer);
-        // }
         private HandleCameraPosition(): void {
             const _currentFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
             const _transform: f.ComponentTransform = _currentFigure.getComponent(f.ComponentTransform);

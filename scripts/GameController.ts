@@ -18,15 +18,11 @@ namespace ChessGame {
     let _viewport: f.Viewport;
     let _canvas: HTMLCanvasElement;
     let _camera: Camera;
-    let _inputController: InputController;
+    let _gameController: GameController;
     let _cameraController: CameraController;
-    // let _gameTime: Number;
-    // let _dragTime: Number;
-    // let _speed: number = 1;
     let _places: f.Node[] = [];
     let _surface: f.Node;
     let _chessPlayer: ChessPlayers;
-    // let _maxTime: number = 120;
     let _selectionControl: SelectionControl;
     let _startUserPlayer: UserType = UserType.PLAYER;
 
@@ -95,7 +91,6 @@ namespace ChessGame {
 
         _canvas.addEventListener("click", _canvas.requestPointerLock);
         console.log(_root);
-        // _inputController.ResetTimer();
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
         f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
     }
@@ -172,17 +167,14 @@ namespace ChessGame {
     function InitController(): void {
 
         _selectionControl = new SelectionControl();
-        // _cameraController = new CameraController();
-        // _inputController = new InputController(_places, _chessPlayer, _cameraController, _selectionControl);
-
+        _gameController = new GameController(_chessPlayer, _places, _cameraController, _selectionControl);
         _root.appendChild(_selectionControl);
 
     }
     function HandleGame(event: Event): void {
-        // _inputController.HandleInput();
+        _gameController.HandleGame();
         ƒ.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
         _viewport.draw();
-        // f.Physics.settings.debugDraw = true;
     }
 
 }

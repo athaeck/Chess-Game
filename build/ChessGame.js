@@ -171,15 +171,11 @@ var ChessGame;
     let _viewport;
     let _canvas;
     let _camera;
-    let _inputController;
+    let _gameController;
     let _cameraController;
-    // let _gameTime: Number;
-    // let _dragTime: Number;
-    // let _speed: number = 1;
     let _places = [];
     let _surface;
     let _chessPlayer;
-    // let _maxTime: number = 120;
     let _selectionControl;
     let _startUserPlayer = ChessGame.UserType.PLAYER;
     window.addEventListener("load", Start);
@@ -235,7 +231,6 @@ var ChessGame;
         ChessGame.Hud.start();
         _canvas.addEventListener("click", _canvas.requestPointerLock);
         console.log(_root);
-        // _inputController.ResetTimer();
         f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, HandleGame);
         f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
     }
@@ -307,31 +302,20 @@ var ChessGame;
     }
     function InitController() {
         _selectionControl = new ChessGame.SelectionControl();
-        // _cameraController = new CameraController();
-        // _inputController = new InputController(_places, _chessPlayer, _cameraController, _selectionControl);
+        _gameController = new GameController(_chessPlayer, _places, _cameraController, _selectionControl);
         _root.appendChild(_selectionControl);
     }
     function HandleGame(event) {
-        // _inputController.HandleInput();
+        _gameController.HandleGame();
         ƒ.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
         _viewport.draw();
-        // f.Physics.settings.debugDraw = true;
     }
 })(ChessGame || (ChessGame = {}));
 var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
-    // export interface UserTime {
-    //     _usedTime: number;
-    // }
-    // export type ManageUserTimer = {
-    //     [key in UserType]: UserTime;
-    // };
     class InputController {
         constructor(places, player, cameraController, selectionControl, user) {
-            // // private _userTimer: ManageUserTimer;
-            // private _maxTime: number;
-            // private _break: boolean = false;
             this._currentChessFigureIndex = 0;
             this._clickable = true;
             this._movementIndex = 0;
@@ -342,16 +326,14 @@ var ChessGame;
             this._places = places;
             this._player = player;
             this._cameraController = cameraController;
-            // this._userTimer = {
-            //     player: { _usedTime: maxTime },
-            //     enemy: { _usedTime: maxTime }
-            // };
-            // this._maxTime = maxTime;
             this._currentPlayer = user;
+            this._cameraController.UpdatePlayer(this._currentPlayer);
             this.GetChessFigureMovements();
+            console.log("InputController", this);
         }
         UpdateCurrentUser(user) {
             if (user !== this._currentPlayer) {
+                this._cameraController.UpdatePlayer(user);
                 this._selectionFinished = false;
             }
             this._currentPlayer = user;
@@ -426,13 +408,6 @@ var ChessGame;
                     this.SelectTimerReset();
                 }
             }
-            if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
-                this.Move();
-                this.SelectTimerReset();
-                setTimeout(() => {
-                    this.GetChessFigureMovements();
-                }, 1200);
-            }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.Q])) {
                 this._isMovement = true;
                 this.PressTimerReset();
@@ -441,16 +416,17 @@ var ChessGame;
                 this._isMovement = false;
                 this.PressTimerReset();
             }
-            // console.log(f.EventWheel)
+            if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
+                this.Move();
+                this.SelectTimerReset();
+                setTimeout(() => {
+                    this.GetChessFigureMovements();
+                    this._selectionFinished = true;
+                    this._currentChessFigureIndex = 0;
+                }, 1200);
+            }
             this.ShowSelection();
         }
-        // public ResetTimer(): void {
-        //     this._userTimer = {
-        //         player: { _usedTime: this._maxTime },
-        //         enemy: { _usedTime: this._maxTime }
-        //     };
-        //     this._currentUseTime = 0;
-        // }
         Move() {
             const currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
             const currentMove = this._movements[this._movementIndex];
@@ -479,7 +455,7 @@ var ChessGame;
             }
         }
         CheckIfValidIndex() {
-            console.log(this._movements);
+            console.log("Available Movements", this._movements);
             if (this._currentChessFigureIndex > this._player[this._currentPlayer].GetFigures().length - 1) {
                 this._currentChessFigureIndex = 0;
             }
@@ -493,25 +469,6 @@ var ChessGame;
                 this._movementIndex = this._movements.length - 1;
             }
         }
-        // private UpdateTimer(): void {
-        //     if (!this._break) {
-        //         this._currentUseTime++;
-        //         // this._currentUseTime = this._currentUseTime / 10;
-        //         gameState.currentTime = this._currentUseTime;
-        //     }
-        //     // this._userTimer[this._currentPlayer]._usedTime++:
-        //     // this._currentUseTime++;
-        //     // console.log(this._timer)
-        //     // gameState.time = this._timer;
-        // }
-        // private SwitchPlayerTimer(): void {
-        //     const t: number = this._currentUseTime;
-        //     const r: number = this._userTimer[this._currentPlayer]._usedTime;
-        //     this._userTimer[this._currentPlayer]._usedTime = r - t;
-        //     this._currentUseTime = 0;
-        //     this._currentChessFigureIndex = 0;
-        //     this._cameraController.UpdatePlayer(this._currentPlayer);
-        // }
         HandleCameraPosition() {
             const _currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
             const _transform = _currentFigure.getComponent(f.ComponentTransform);
