@@ -31,6 +31,7 @@ namespace ChessGame {
                 this._selectionFinished = false;
             }
             this._currentPlayer = user;
+            this.GetChessFigureMovements();
         }
         public GetCurrentUser(): UserType {
             return this._currentPlayer;
@@ -46,13 +47,13 @@ namespace ChessGame {
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.D])) {
                     this._currentChessFigureIndex++;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.A])) {
                     this._currentChessFigureIndex--;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.W])) {
@@ -75,13 +76,13 @@ namespace ChessGame {
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_RIGHT])) {
                     this._currentChessFigureIndex++;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_LEFT])) {
                     this._currentChessFigureIndex--;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_UP])) {
@@ -114,30 +115,33 @@ namespace ChessGame {
                 this.Move();
                 this.SelectTimerReset();
                 setTimeout(() => {
-                    this.GetChessFigureMovements();
+                    // this.GetChessFigureMovements();
                     this._selectionFinished = true;
                     this._currentChessFigureIndex = 0;
-                }, 1200);
+                    // this.GetChessFigureMovements();
+                },         1200);
             }
             this.ShowSelection();
         }
         private Move(): void {
             const currentFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
-            const currentMove: f.ComponentTransform = this._movements[this._movementIndex];
-            currentFigure.addComponent(new MovementController(currentMove, this._places, currentFigure.name));
+            if (this._movements.length > 0) {
+                const currentMove: f.ComponentTransform = this._movements[this._movementIndex];
+                currentFigure.addComponent(new MovementController(currentMove, this._places, currentFigure.name));
+            }
         }
         private HandleSoundController(soundType: SoundType): void {
             const index: number = this._currentChessFigureIndex;
-            let soundFile: string = "";
-            switch (soundType) {
-                case SoundType.SELECT_CHESSFIGURE:
-                    soundFile = "Beat";
-                    break;
-                default:
-                    soundFile = "Ufo";
-                    break;
-            }
-            const soundController: SoundController = new SoundController(soundFile);
+            // let soundFile: string = "";
+            // switch (soundType) {
+            //     case SoundType.SELECT_FIGURE:
+            //         soundFile = "Beat";
+            //         break;
+            //     default:
+            //         soundFile = "Ufo";
+            //         break;
+            // }
+            const soundController: SoundController = new SoundController(soundType);
             this._player[this._currentPlayer].GetFigures()[index].addComponent(soundController);
         }
         private HandleSelectionControl(): void {
@@ -254,7 +258,7 @@ namespace ChessGame {
                                         const placeTransform: f.ComponentTransform = place.getComponent(f.ComponentTransform);
                                         if (Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
                                             const placeController: PlaceController = place.getComponent(PlaceController);
-                                            console.log(placeController);
+                                            // console.log(placeController);
                                             if (!placeController.IsChessFigureNull()) {
                                                 if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
                                                     POSSIBLEMOVEMENTS.push(placeTransform);

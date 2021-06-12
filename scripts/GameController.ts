@@ -32,22 +32,28 @@ namespace ChessGame {
         private _currentUser: UserType;
         private _chessPlayer: ChessPlayers;
         private _playerTimeController: TimeController;
-        constructor(chessPlayer: ChessPlayers, places: f.Node[],cameraController: CameraController, selctionController: SelectionControl) {
+        private _root: f.Graph;
+        private _soundController: SoundController;
+        constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph) {
             const random: number = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? UserType.PLAYER : UserType.ENEMY;
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser);
+            this._root = root;
+            this._soundController = new SoundController(SoundType.TIME);
+            this._root.addComponent(this._soundController);
         }
-        public HandleGame(): void{
+        public HandleGame(): void {
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController.UpdateCurrentUser(this._currentUser);
             this._inputController.HandleInput();
             this.HandleFinishMove();
         }
-        private HandleFinishMove(): void{
+        private HandleFinishMove(): void {
             if (this._inputController.GetSelectionState()) {
                 this._playerTimeController.StoppTimer();
+                this._soundController.Delete();
                 switch (this._currentUser) {
                     case UserType.PLAYER:
                         this._currentUser = UserType.ENEMY;
@@ -57,7 +63,9 @@ namespace ChessGame {
                         break;
                 }
                 this._playerTimeController.StartTimer();
+                this._root.addComponent(this._soundController);
             }
+            
         }
     }
     async function Start(event: Event): Promise<void> {
@@ -159,7 +167,7 @@ namespace ChessGame {
 
         const CHESSPLAYER: ChessPlayers = {
             player,
-            enemy 
+            enemy
         };
         _chessPlayer = CHESSPLAYER;
     }
@@ -167,8 +175,9 @@ namespace ChessGame {
     function InitController(): void {
 
         _selectionControl = new SelectionControl();
-        _gameController = new GameController(_chessPlayer, _places, _cameraController, _selectionControl);
+        _gameController = new GameController(_chessPlayer, _places, _cameraController, _selectionControl, _root);
         _root.appendChild(_selectionControl);
+        _root.addComponent(new SoundController(SoundType.ATMO));
 
     }
     function HandleGame(event: Event): void {

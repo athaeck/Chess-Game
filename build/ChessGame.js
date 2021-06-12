@@ -105,6 +105,7 @@ var ChessGame;
 (function (ChessGame) {
     class ChessPlayer {
         constructor(chessFigures, type, timeController) {
+            this._graveYard = [];
             this._chessFigures = chessFigures;
             this._type = type;
             this._timeController = timeController;
@@ -119,6 +120,7 @@ var ChessGame;
             return this._type;
         }
         RemoveFigure(figure) {
+            this._graveYard.push(figure.name);
             this._chessFigures.removeChild(figure);
         }
         AddFigure(figure) {
@@ -132,6 +134,8 @@ var ChessGame;
     class DataController {
         constructor() {
             this._chessFigureSetting = "./data/ChessFigureSetting.json";
+            this._chessFigures = "./data/ChessFigures.json";
+            this._gameSetting = "./data/GameSetting.json";
         }
         static get Instance() {
             return this._instance || (this._instance = new this());
@@ -140,6 +144,14 @@ var ChessGame;
             let res = await fetch(this._chessFigureSetting);
             let resBody = await res.json();
             return resBody[name];
+        }
+        async GetSound(type) {
+            const setting = await (await this.GetGameSetting()).Sound;
+            return setting[type];
+        }
+        async GetGameSetting() {
+            const setting = await (await fetch(this._gameSetting)).json();
+            return setting;
         }
     }
     ChessGame.DataController = DataController;
@@ -153,10 +165,19 @@ var ChessGame;
     })(UserType = ChessGame.UserType || (ChessGame.UserType = {}));
     let SoundType;
     (function (SoundType) {
-        SoundType["SELECT_CHESSFIGURE"] = "select-chessfigure";
-        SoundType["SELECT_FIELD"] = "select-field";
-        SoundType["COLLISION"] = "collision";
+        SoundType["SELECT_FIGURE"] = "SELECT_FIGURE";
+        SoundType["SELECT_FIELD"] = "SELECT_FIELD";
+        SoundType["HIT"] = "HIT";
+        SoundType["ATMO"] = "ATMO";
+        SoundType["TIME"] = "TIME";
+        SoundType["MOVE"] = "MOVE";
     })(SoundType = ChessGame.SoundType || (ChessGame.SoundType = {}));
+    let SettingType;
+    (function (SettingType) {
+        SettingType["Sound"] = "Sound";
+        SettingType["Time"] = "Time";
+        SettingType["SoundSetting"] = "SoundSetting";
+    })(SettingType = ChessGame.SettingType || (ChessGame.SettingType = {}));
 })(ChessGame || (ChessGame = {}));
 ///<reference path="./enum.ts"/>
 var ChessGame;
@@ -180,12 +201,15 @@ var ChessGame;
     let _startUserPlayer = ChessGame.UserType.PLAYER;
     window.addEventListener("load", Start);
     class GameController {
-        constructor(chessPlayer, places, cameraController, selctionController) {
+        constructor(chessPlayer, places, cameraController, selctionController, root) {
             const random = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? ChessGame.UserType.PLAYER : ChessGame.UserType.ENEMY;
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController = new ChessGame.InputController(places, chessPlayer, cameraController, selctionController, this._currentUser);
+            this._root = root;
+            this._soundController = new ChessGame.SoundController(ChessGame.SoundType.TIME);
+            this._root.addComponent(this._soundController);
         }
         HandleGame() {
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
@@ -196,6 +220,7 @@ var ChessGame;
         HandleFinishMove() {
             if (this._inputController.GetSelectionState()) {
                 this._playerTimeController.StoppTimer();
+                this._soundController.Delete();
                 switch (this._currentUser) {
                     case ChessGame.UserType.PLAYER:
                         this._currentUser = ChessGame.UserType.ENEMY;
@@ -205,6 +230,7 @@ var ChessGame;
                         break;
                 }
                 this._playerTimeController.StartTimer();
+                this._root.addComponent(this._soundController);
             }
         }
     }
@@ -302,8 +328,9 @@ var ChessGame;
     }
     function InitController() {
         _selectionControl = new ChessGame.SelectionControl();
-        _gameController = new GameController(_chessPlayer, _places, _cameraController, _selectionControl);
+        _gameController = new GameController(_chessPlayer, _places, _cameraController, _selectionControl, _root);
         _root.appendChild(_selectionControl);
+        _root.addComponent(new ChessGame.SoundController(ChessGame.SoundType.ATMO));
     }
     function HandleGame(event) {
         _gameController.HandleGame();
@@ -337,6 +364,7 @@ var ChessGame;
                 this._selectionFinished = false;
             }
             this._currentPlayer = user;
+            this.GetChessFigureMovements();
         }
         GetCurrentUser() {
             return this._currentPlayer;
@@ -352,13 +380,13 @@ var ChessGame;
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.D])) {
                     this._currentChessFigureIndex++;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(ChessGame.SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(ChessGame.SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.A])) {
                     this._currentChessFigureIndex--;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(ChessGame.SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(ChessGame.SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.W])) {
@@ -382,13 +410,13 @@ var ChessGame;
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_RIGHT])) {
                     this._currentChessFigureIndex++;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(ChessGame.SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(ChessGame.SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_LEFT])) {
                     this._currentChessFigureIndex--;
                     this.CheckIfValidIndex();
-                    this.HandleSoundController(ChessGame.SoundType.SELECT_CHESSFIGURE);
+                    this.HandleSoundController(ChessGame.SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_UP])) {
@@ -420,30 +448,33 @@ var ChessGame;
                 this.Move();
                 this.SelectTimerReset();
                 setTimeout(() => {
-                    this.GetChessFigureMovements();
+                    // this.GetChessFigureMovements();
                     this._selectionFinished = true;
                     this._currentChessFigureIndex = 0;
+                    // this.GetChessFigureMovements();
                 }, 1200);
             }
             this.ShowSelection();
         }
         Move() {
             const currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
-            const currentMove = this._movements[this._movementIndex];
-            currentFigure.addComponent(new ChessGame.MovementController(currentMove, this._places, currentFigure.name));
+            if (this._movements.length > 0) {
+                const currentMove = this._movements[this._movementIndex];
+                currentFigure.addComponent(new ChessGame.MovementController(currentMove, this._places, currentFigure.name));
+            }
         }
         HandleSoundController(soundType) {
             const index = this._currentChessFigureIndex;
-            let soundFile = "";
-            switch (soundType) {
-                case ChessGame.SoundType.SELECT_CHESSFIGURE:
-                    soundFile = "Beat";
-                    break;
-                default:
-                    soundFile = "Ufo";
-                    break;
-            }
-            const soundController = new ChessGame.SoundController(soundFile);
+            // let soundFile: string = "";
+            // switch (soundType) {
+            //     case SoundType.SELECT_FIGURE:
+            //         soundFile = "Beat";
+            //         break;
+            //     default:
+            //         soundFile = "Ufo";
+            //         break;
+            // }
+            const soundController = new ChessGame.SoundController(soundType);
             this._player[this._currentPlayer].GetFigures()[index].addComponent(soundController);
         }
         HandleSelectionControl() {
@@ -560,7 +591,7 @@ var ChessGame;
                                         const placeTransform = place.getComponent(f.ComponentTransform);
                                         if (ChessGame.Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && ChessGame.Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
                                             const placeController = place.getComponent(ChessGame.PlaceController);
-                                            console.log(placeController);
+                                            // console.log(placeController);
                                             if (!placeController.IsChessFigureNull()) {
                                                 if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
                                                     POSSIBLEMOVEMENTS.push(placeTransform);
@@ -620,6 +651,7 @@ var ChessGame;
             this.Move();
         }
         Move() {
+            this._parent.addComponent(new ChessGame.SoundController(ChessGame.SoundType.MOVE));
             this._body.physicsType = f.PHYSICS_TYPE.DYNAMIC;
             const toTranslate = new f.Vector3(this._target.mtxLocal.translation.x - this._start.mtxLocal.translation.x, 0, this._target.mtxLocal.translation.z - this._start.mtxLocal.translation.z);
             // if (this._name) {
@@ -641,7 +673,6 @@ var ChessGame;
                 const currentPlaceController = this._parent.GetPlace().getComponent(ChessGame.PlaceController);
                 currentPlaceController.RemoveChessFigure();
                 newPlaceController.SetChessFigure(this._parent);
-                //  console.log(this._places);
                 this.getContainer().removeComponent(this);
             }, 1000);
             // });
@@ -717,21 +748,30 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class SoundController extends f.ComponentScript {
-        constructor(soundName) {
+        constructor(type) {
             super();
-            this._volume = 5;
-            this._soundFileName = soundName;
+            this._type = type;
             this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.Created.bind(this));
         }
-        Created(event) {
-            const audio = new f.Audio(`Audio/${this._soundFileName}.mp3`);
-            const soundComponent = new f.ComponentAudio(audio);
-            this.getContainer().addComponent(soundComponent);
-            soundComponent.volume = this._volume;
-            soundComponent.play(true);
-            if (!soundComponent.isPlaying) {
-                this.getContainer().removeComponent(soundComponent);
-                this.getContainer().removeComponent(this);
+        Delete() {
+            this.getContainer().removeComponent(this._soundComponent);
+            this.getContainer().removeComponent(this);
+        }
+        async FetchData(type) {
+            this._setting = await ChessGame.DataController.Instance.GetSound(type);
+            this._soundSettings = await (await ChessGame.DataController.Instance.GetGameSetting()).SoundSetting;
+        }
+        async Created(event) {
+            await this.FetchData(this._type);
+            if (this._soundSettings.withSound) {
+                const audio = new f.Audio(`./audio/${this._setting.name}.mp3`);
+                this._soundComponent = new f.ComponentAudio(audio, this._setting.loop);
+                this.getContainer().addComponent(this._soundComponent);
+                this._soundComponent.volume = this._setting.volume;
+                this._soundComponent.play(true);
+                if (!this._soundComponent.isPlaying) {
+                    this.Delete();
+                }
             }
         }
     }

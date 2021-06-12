@@ -23,4 +23,18 @@ namespace ChessGame {
     export type ChessPlayers = {
         [key in UserType]: ChessPlayer;
     };
+    export interface SoundData {
+        name: string;
+        volume: number;
+        loop: boolean;
+    }
+    export type Sound = {
+        [key in SoundType]: SoundData;
+    };
+    export type Setting = {
+        [key in SettingType]: any
+    }
+    export interface SoundSetting{
+        withSound: boolean;
+    }
 }

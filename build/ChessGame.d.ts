@@ -39,6 +39,7 @@ declare namespace ChessGame {
         private _chessFigures;
         private _type;
         private _timeController;
+        private _graveYard;
         constructor(chessFigures: f.Node, type: UserType, timeController: TimeController);
         GetFigures(): ChessFigure[];
         GetTimeController(): TimeController;
@@ -51,9 +52,13 @@ declare namespace ChessGame {
     class DataController {
         private static _instance;
         private _chessFigureSetting;
+        private _chessFigures;
+        private _gameSetting;
         private constructor();
         static get Instance(): DataController;
         GetMovementData(name: string): Promise<ChessPlayerSetting>;
+        GetSound(type: SoundType): Promise<SoundData>;
+        GetGameSetting(): Promise<Setting>;
     }
 }
 declare namespace ChessGame {
@@ -62,9 +67,17 @@ declare namespace ChessGame {
         ENEMY = "enemy"
     }
     enum SoundType {
-        SELECT_CHESSFIGURE = "select-chessfigure",
-        SELECT_FIELD = "select-field",
-        COLLISION = "collision"
+        SELECT_FIGURE = "SELECT_FIGURE",
+        SELECT_FIELD = "SELECT_FIELD",
+        HIT = "HIT",
+        ATMO = "ATMO",
+        TIME = "TIME",
+        MOVE = "MOVE"
+    }
+    enum SettingType {
+        Sound = "Sound",
+        Time = "Time",
+        SoundSetting = "SoundSetting"
     }
 }
 declare namespace ChessGame {
@@ -82,7 +95,9 @@ declare namespace ChessGame {
         private _currentUser;
         private _chessPlayer;
         private _playerTimeController;
-        constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl);
+        private _root;
+        private _soundController;
+        constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph);
         HandleGame(): void;
         private HandleFinishMove;
     }
@@ -158,9 +173,13 @@ declare namespace ChessGame {
 declare namespace ChessGame {
     import f = FudgeCore;
     class SoundController extends f.ComponentScript {
-        private _volume;
-        private _soundFileName;
-        constructor(soundName: string);
+        private _type;
+        private _setting;
+        private _soundSettings;
+        private _soundComponent;
+        constructor(type: SoundType);
+        Delete(): void;
+        private FetchData;
         private Created;
     }
 }
@@ -216,4 +235,18 @@ declare namespace ChessGame {
     type ChessPlayers = {
         [key in UserType]: ChessPlayer;
     };
+    interface SoundData {
+        name: string;
+        volume: number;
+        loop: boolean;
+    }
+    type Sound = {
+        [key in SoundType]: SoundData;
+    };
+    type Setting = {
+        [key in SettingType]: any;
+    };
+    interface SoundSetting {
+        withSound: boolean;
+    }
 }

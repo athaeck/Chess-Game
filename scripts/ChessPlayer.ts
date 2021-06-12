@@ -4,6 +4,7 @@ namespace ChessGame {
         private _chessFigures: f.Node;
         private _type: UserType;
         private _timeController: TimeController;
+        private _graveYard: string[] = [];
         constructor(chessFigures: f.Node, type: UserType, timeController: TimeController) {
             this._chessFigures = chessFigures;
             this._type = type;
@@ -19,6 +20,7 @@ namespace ChessGame {
             return this._type;
         }
         public RemoveFigure(figure: f.Node): void{
+            this._graveYard.push(figure.name);
             this._chessFigures.removeChild(figure);
         }
         public AddFigure(figure: ChessFigure): void{

@@ -3,6 +3,9 @@ namespace ChessGame {
         PLAYER = "player", ENEMY= "enemy"
     }
     export enum SoundType {
-        SELECT_CHESSFIGURE= "select-chessfigure", SELECT_FIELD= "select-field", COLLISION= "collision"
+        SELECT_FIGURE= "SELECT_FIGURE", SELECT_FIELD= "SELECT_FIELD", HIT= "HIT", ATMO= "ATMO", TIME= "TIME", MOVE= "MOVE"
+    }
+    export enum SettingType{
+        Sound= "Sound", Time= "Time", SoundSetting= "SoundSetting"
     }
 }

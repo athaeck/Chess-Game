@@ -21,6 +21,7 @@ namespace ChessGame {
             this.Move();
         }
         private Move(): void {
+            this._parent.addComponent(new SoundController(SoundType.MOVE));
             this._body.physicsType = f.PHYSICS_TYPE.DYNAMIC;
             const toTranslate: f.Vector3 = new f.Vector3(this._target.mtxLocal.translation.x - this._start.mtxLocal.translation.x, 0, this._target.mtxLocal.translation.z - this._start.mtxLocal.translation.z);
             // if (this._name) {
@@ -44,7 +45,6 @@ namespace ChessGame {
                  const currentPlaceController: PlaceController = this._parent.GetPlace().getComponent(PlaceController);
                  currentPlaceController.RemoveChessFigure();
                  newPlaceController.SetChessFigure(this._parent);
-                //  console.log(this._places);
 
                  this.getContainer().removeComponent(this);
             },         1000);
