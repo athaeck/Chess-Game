@@ -21,6 +21,10 @@ namespace ChessGame {
         }
         public RemoveFigure(figure: f.Node): void{
             this._graveYard.push(figure.name);
+            const cmps: f.Component[] = figure.getAllComponents();
+            for (const cmp of cmps) {
+                figure.removeComponent(cmp);
+            }
             this._chessFigures.removeChild(figure);
         }
         public AddFigure(figure: ChessFigure): void{

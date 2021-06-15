@@ -22,6 +22,7 @@ declare namespace ChessGame {
         private _place;
         private _user;
         private _move;
+        private _timerOn;
         constructor(name: string, mass: number, pysicsType: f.PHYSICS_TYPE, colliderType: f.COLLIDER_TYPE, group: f.PHYSICS_GROUP, place: f.Node, user: ChessPlayer);
         SetPlace(place: f.Node): void;
         GetPlace(): f.Node;
@@ -30,6 +31,7 @@ declare namespace ChessGame {
         GetChessFigureMovement(): ChessPlayerSetting;
         UpdateInitScale(): void;
         GetUser(): ChessPlayer;
+        SetDeathTimer(): void;
         private HandleMoveData;
     }
 }
@@ -46,6 +48,15 @@ declare namespace ChessGame {
         GetPlayerType(): UserType;
         RemoveFigure(figure: f.Node): void;
         AddFigure(figure: ChessFigure): void;
+    }
+}
+declare namespace ChessGame {
+    import f = FudgeCore;
+    class CollisionController extends f.ComponentScript {
+        constructor();
+        Remove(): void;
+        private Created;
+        private HandleCollision;
     }
 }
 declare namespace ChessGame {
@@ -77,7 +88,8 @@ declare namespace ChessGame {
     enum SettingType {
         Sound = "Sound",
         Time = "Time",
-        SoundSetting = "SoundSetting"
+        SoundSetting = "SoundSetting",
+        Input = "Input"
     }
 }
 declare namespace ChessGame {
@@ -97,9 +109,14 @@ declare namespace ChessGame {
         private _playerTimeController;
         private _root;
         private _soundController;
+        private _enemyOnTheWay;
+        private _collidingEnemy;
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph);
         HandleGame(): void;
+        private WatchMovementController;
+        private DeSpawnEnemy;
         private HandleFinishMove;
+        private HandleMovements;
     }
 }
 declare namespace ChessGame {
@@ -113,10 +130,10 @@ declare namespace ChessGame {
         private _clickable;
         private _selectionControl;
         private _movementIndex;
+        private _attackIndex;
         private _movements;
         private _attacks;
         private _isMovement;
-        private x;
         private _selectionFinished;
         constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType);
         UpdateCurrentUser(user: UserType): void;
@@ -143,9 +160,16 @@ declare namespace ChessGame {
         private _name;
         private _body;
         private _parent;
-        constructor(target: f.ComponentTransform, places: f.Node[], name: string);
+        private _enemyOnTheWay;
+        private _collidingEnemy;
+        constructor();
+        get EnemyOnTheWay(): boolean;
+        get CollidingEnemy(): ChessFigure;
+        Init(target: f.ComponentTransform, places: f.Node[], name: string): void;
+        EndMovement(): void;
         private Start;
-        private Move;
+        private HandleMove;
+        private CheckIfEnemyOccupyWay;
     }
 }
 declare namespace ChessGame {
@@ -166,6 +190,16 @@ declare namespace ChessGame {
     }
 }
 declare namespace ChessGame {
+    import f = FudgeCore;
+    class Projectile extends GameObject {
+        private _target;
+        private _speed;
+        constructor(target: f.Vector3);
+        Move(): void;
+        private HandleCollision;
+    }
+}
+declare namespace ChessGame {
     class SelectionControl extends GameObject {
         constructor();
     }
@@ -181,6 +215,16 @@ declare namespace ChessGame {
         Delete(): void;
         private FetchData;
         private Created;
+    }
+}
+declare namespace ChessGame {
+    class State {
+        private static _instance;
+        private activeUser;
+        private constructor();
+        static get Instance(): State;
+        set SetUser(user: UserType);
+        get User(): UserType;
     }
 }
 declare namespace ChessGame {
@@ -248,5 +292,8 @@ declare namespace ChessGame {
     };
     interface SoundSetting {
         withSound: boolean;
+    }
+    interface Input {
+        mouseLock: boolean;
     }
 }

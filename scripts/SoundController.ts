@@ -11,8 +11,10 @@ namespace ChessGame {
             this.addEventListener(f.EVENT.COMPONENT_ADD, this.Created.bind(this));
         }
         public Delete(): void {
-            this.getContainer().removeComponent( this._soundComponent);
-            this.getContainer().removeComponent(this);
+            if (this._soundSettings.withSound) {
+                this.getContainer().removeComponent(this._soundComponent);
+                this.getContainer().removeComponent(this);
+            }
         }
         private async FetchData(type: SoundType): Promise<void>{
             this._setting = await DataController.Instance.GetSound(type);
@@ -26,9 +28,11 @@ namespace ChessGame {
                 this.getContainer().addComponent( this._soundComponent);
                 this._soundComponent.volume = this._setting.volume;
                 this._soundComponent.play(true);
-                if (! this._soundComponent.isPlaying) {
-                   this.Delete();
-                }
+                setTimeout(() => {
+                    if (! this._soundComponent.isPlaying) {
+                        this.Delete();
+                    }
+                },         2000);
             }
         }
     }

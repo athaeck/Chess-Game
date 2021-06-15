@@ -5,6 +5,7 @@ namespace ChessGame {
         private _place: f.Node;
         private _user: ChessPlayer;
         private _move: ChessPlayerSetting;
+        private _timerOn: boolean = false;
         constructor(name: string, mass: number, pysicsType: f.PHYSICS_TYPE, colliderType: f.COLLIDER_TYPE, group: f.PHYSICS_GROUP, place: f.Node, user: ChessPlayer) {
             super(name, mass, pysicsType, colliderType, group, new f.MeshSphere);
             this._place = place;
@@ -23,9 +24,10 @@ namespace ChessGame {
             let materialSolidWhite: f.Material = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user.GetPlayerType() === UserType.PLAYER ? "Black" : "White")));
             let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);
-
+            // this.addComponent(new CollisionController())
             this.mtxLocal.translate(new f.Vector3(this._place.mtxLocal.translation.x, posY, this._place.mtxLocal.translation.z));
             this.HandleMoveData(name);
+            
         }
         public SetPlace(place: f.Node): void {
             this._place = place;
@@ -47,6 +49,14 @@ namespace ChessGame {
         }
         public GetUser(): ChessPlayer {
             return this._user;
+        }
+        public SetDeathTimer(): void {
+            if (!this._timerOn) {
+                setTimeout(() => {
+                    this._user.RemoveFigure(this);
+                },         1000);
+            }   
+            this._timerOn = true;
         }
         private async HandleMoveData(name: string): Promise<void> {
             this._move = await DataController.Instance.GetMovementData(name);

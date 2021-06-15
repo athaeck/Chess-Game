@@ -10,10 +10,11 @@ namespace ChessGame {
         private _clickable: boolean = true;
         private _selectionControl: SelectionControl;
         private _movementIndex: number = 0;
+        private _attackIndex: number = 0;
         private _movements: f.ComponentTransform[];
         private _attacks: f.ComponentTransform[];
         private _isMovement: boolean = true;
-        private x: number = 0;
+        // private x: number = 0;
         private _selectionFinished: boolean = false;
         constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType) {
             this._selectionControl = selectionControl;
@@ -41,7 +42,6 @@ namespace ChessGame {
         }
         public HandleInput(): void {
             this.HandleSelectionControl();
-            // this.UpdateTimer();
             this.HandleCameraPosition();
             if (this._currentPlayer === UserType.PLAYER) {
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.D])) {
@@ -57,16 +57,28 @@ namespace ChessGame {
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.W])) {
-                    if (this._movements.length > 0) {
-                        this._movementIndex++;
+                    if (this._isMovement) {
+                        if (this._movements.length > 0) {
+                            this._movementIndex++;
+                        }
+                    } else {
+                        if (this._attacks.length > 0) {
+                            this._attackIndex++;
+                        }
                     }
                     this.CheckIfValidIndex();
                     this.HandleSoundController(SoundType.SELECT_FIELD);
                     this.SelectTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.S])) {
-                    if (this._movements.length > 0) {
-                        this._movementIndex--;
+                    if (this._isMovement) {
+                        if (this._movements.length > 0) {
+                            this._movementIndex--;
+                        }
+                    } else {
+                        if (this._attacks.length > 0) {
+                            this._attackIndex--;
+                        }
                     }
                     this.CheckIfValidIndex();
                     this.HandleSoundController(SoundType.SELECT_FIELD);
@@ -86,65 +98,81 @@ namespace ChessGame {
                     this.PressTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_UP])) {
-                    if (this._movements.length > 0) {
-                        this._movementIndex++;
+                    if (this._isMovement) {
+                        if (this._movements.length > 0) {
+                            this._movementIndex++;
+                        }
+                    } else {
+                        if (this._attacks.length > 0) {
+                            this._attackIndex++;
+                        }
                     }
                     this.CheckIfValidIndex();
                     this.HandleSoundController(SoundType.SELECT_FIELD);
                     this.SelectTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_DOWN])) {
-                    if (this._movements.length > 0) {
-                        this._movementIndex--;
+                   if (this._isMovement) {
+                        if (this._movements.length > 0) {
+                            this._movementIndex--;
+                        }
+                    } else {
+                        if (this._attacks.length > 0) {
+                            this._attackIndex--;
+                        }
                     }
-                    this.CheckIfValidIndex();
-                    this.HandleSoundController(SoundType.SELECT_FIELD);
-                    this.SelectTimerReset();
+                   this.CheckIfValidIndex();
+                   this.HandleSoundController(SoundType.SELECT_FIELD);
+                   this.SelectTimerReset();
                 }
             }
 
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.Q])) {
-                this._isMovement = true;
+                this._isMovement = !this._isMovement;
                 this.PressTimerReset();
             }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.E])) {
-                this._isMovement = false;
+                this._isMovement = !this._isMovement;
                 this.PressTimerReset();
             }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
                 this.Move();
                 this.SelectTimerReset();
-                setTimeout(() => {
-                    // this.GetChessFigureMovements();
+                setTimeout((ref: f.Node) => {
                     this._selectionFinished = true;
                     this._currentChessFigureIndex = 0;
-                    // this.GetChessFigureMovements();
-                },         1200);
+                    this._attackIndex = 0;
+                    ref.getComponent(MovementController).EndMovement();
+                },         1200, this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]);
             }
             this.ShowSelection();
         }
         private Move(): void {
-            const currentFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
-            if (this._movements.length > 0) {
-                const currentMove: f.ComponentTransform = this._movements[this._movementIndex];
-                currentFigure.addComponent(new MovementController(currentMove, this._places, currentFigure.name));
+            const movementController: MovementController = new MovementController();
+            const currentFigure: f.Node = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
+            let currentMove: f.ComponentTransform;
+            if (this._isMovement) {
+                if (this._movements.length > 0) {
+                    currentMove = this._movements[this._movementIndex];
+                }
+            } else {
+                if (this._attacks.length > 0) {
+                    currentMove = this._attacks[this._attackIndex];
+                }
+            }
+            if (currentMove) {
+                movementController.Init(currentMove, this._places, currentFigure.name);
+                currentFigure.addComponent(movementController);
             }
         }
         private HandleSoundController(soundType: SoundType): void {
             const index: number = this._currentChessFigureIndex;
-            // let soundFile: string = "";
-            // switch (soundType) {
-            //     case SoundType.SELECT_FIGURE:
-            //         soundFile = "Beat";
-            //         break;
-            //     default:
-            //         soundFile = "Ufo";
-            //         break;
-            // }
             const soundController: SoundController = new SoundController(soundType);
             this._player[this._currentPlayer].GetFigures()[index].addComponent(soundController);
         }
         private HandleSelectionControl(): void {
+            // Hud.
+            gameState.player = this._currentPlayer;
             if (this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]) {
                 const _currentFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
                 const _currentPlace: f.Node = _currentFigure.GetPlace();
@@ -153,7 +181,8 @@ namespace ChessGame {
             }
         }
         private CheckIfValidIndex(): void {
-            console.log("Available Movements", this._movements);
+            console.log(this._attacks);
+            console.log(this._movements)
             if (this._currentChessFigureIndex > this._player[this._currentPlayer].GetFigures().length - 1) {
                 this._currentChessFigureIndex = 0;
             }
@@ -175,11 +204,20 @@ namespace ChessGame {
             this._cameraController.UpdatePosition(_transform);
         }
         private ShowSelection(): void {
-            if (this._movementIndex < this._movements.length) {
-                const currentMovementPosition: f.Node = this._movements[this._movementIndex].getContainer();
-                const transform: f.ComponentTransform = currentMovementPosition.getComponent(f.ComponentTransform);
-                this._cameraController.UpdatePosition(transform);
-                currentMovementPosition.addChild(new MovementSelection());
+            if (this._isMovement) {
+                if (this._movementIndex < this._movements.length) {
+                    const currentMovementPosition: f.Node = this._movements[this._movementIndex].getContainer();
+                    const transform: f.ComponentTransform = currentMovementPosition.getComponent(f.ComponentTransform);
+                    this._cameraController.UpdatePosition(transform);
+                    currentMovementPosition.addChild(new MovementSelection());
+                }
+            } else {
+                if (this._attackIndex < this._attacks.length) {
+                    const currentAttackPosition: f.Node = this._attacks[this._attackIndex].getContainer();
+                    const transform: f.ComponentTransform = currentAttackPosition.getComponent(f.ComponentTransform);
+                    this._cameraController.UpdatePosition(transform);
+                    currentAttackPosition.addChild(new MovementSelection());
+                }
             }
         }
         private GetChessFigureMovements(): void {
@@ -196,6 +234,7 @@ namespace ChessGame {
                     break;
             }
             const currentChessFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
+            // console.log(currentChessFigure)
             const chessPlayerSetting: ChessPlayerSetting = currentChessFigure.GetChessFigureMovement();
             const currentPlaceTransform: f.ComponentTransform = currentChessFigure.GetPlace().getComponent(f.ComponentTransform);
             const currentPlace: f.Vector3 = currentPlaceTransform.mtxLocal.translation;
@@ -222,12 +261,13 @@ namespace ChessGame {
                                     }
                                 }
                             } else {
+                                // console.log("....")
                                 const targetPosition: f.Vector3 = new f.Vector3(Round(direction * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * movement._fieldsZ + currentPlace.z, 10));
                                 for (const place of this._places) {
                                     const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
                                     if (Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
                                         const placeController: PlaceController = place.getComponent(PlaceController);
-                                        if (!placeController.IsChessFigureNull()) {
+                                        if (!placeController.IsChessFigureNull() && currentChessFigure.name !== "Bauer") {
                                             if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
                                                 POSSIBLEMOVEMENTS.push(placeTrans);
                                             }
@@ -278,12 +318,33 @@ namespace ChessGame {
                         // currentMove++;
                     }
                 } else {
-                    console.log(".....");
+                    // console.log(".....");
+                    if (chessPlayerSetting._attack !== null) {
+                        for (const attack of chessPlayerSetting._attack) {
+                            if (!attack._scalable) {
+                                const targetPosition: f.Vector3 = new f.Vector3(Round(direction * attack._fieldsX + currentPlace.x, 10), 0, Round(direction * attack._fieldsZ + currentPlace.z, 10));
+                                for (const place of this._places) {
+                                    const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
+                                    if (Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                        const placeController: PlaceController = place.getComponent(PlaceController);
+                                        if (!placeController.IsChessFigureNull()) {
+                                            if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
+                                                POSSIBLEATTACKS.push(placeTrans);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        this._isMovement = true;
+                    }
+
                 }
             }
             this._movements = POSSIBLEMOVEMENTS;
             this._attacks = POSSIBLEATTACKS;
-            this.x++;
+            // this.x++;
         }
         private PressTimerReset(): void {
             this.GetChessFigureMovements();

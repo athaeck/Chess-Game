@@ -25,6 +25,7 @@ namespace ChessGame {
     let _chessPlayer: ChessPlayers;
     let _selectionControl: SelectionControl;
     let _startUserPlayer: UserType = UserType.PLAYER;
+    let _inputSetting: Input;
 
     window.addEventListener("load", Start);
     export class GameController {
@@ -34,6 +35,8 @@ namespace ChessGame {
         private _playerTimeController: TimeController;
         private _root: f.Graph;
         private _soundController: SoundController;
+        private _enemyOnTheWay: boolean = false;
+        private _collidingEnemy: ChessFigure;
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph) {
             const random: number = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
@@ -48,12 +51,47 @@ namespace ChessGame {
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController.UpdateCurrentUser(this._currentUser);
             this._inputController.HandleInput();
+            this.WatchMovementController();
+            this.DeSpawnEnemy();
             this.HandleFinishMove();
+        }
+        private WatchMovementController(): void {
+            for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
+                const movementController: MovementController = figure.getComponent(MovementController);
+                if (movementController) {
+                    this._enemyOnTheWay = movementController.EnemyOnTheWay;
+                    this._collidingEnemy = movementController.CollidingEnemy;
+                }
+            }
+        }
+        private DeSpawnEnemy(): void {
+            let enemy: UserType;
+            switch (this._currentUser) {
+                case UserType.ENEMY:
+                    enemy = UserType.PLAYER;
+                    break;
+                default:
+                    enemy = UserType.ENEMY;
+                    break;
+            }
+            if (this._enemyOnTheWay) {
+                for (const figure of this._chessPlayer[enemy].GetFigures()) {
+                    if (this._enemyOnTheWay) {
+                        if (figure !== this._collidingEnemy) {
+                            figure.getAllComponents().forEach((item: f.Component) => {
+                                item.activate(false);
+                            });
+                            figure.activate(false);
+                        }
+                    }
+                }
+            }
         }
         private HandleFinishMove(): void {
             if (this._inputController.GetSelectionState()) {
                 this._playerTimeController.StoppTimer();
                 this._soundController.Delete();
+                this._enemyOnTheWay = false;
                 switch (this._currentUser) {
                     case UserType.PLAYER:
                         this._currentUser = UserType.ENEMY;
@@ -62,10 +100,31 @@ namespace ChessGame {
                         this._currentUser = UserType.PLAYER;
                         break;
                 }
+                for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
+                        figure.activate(true);
+                        figure.getAllComponents().forEach((item: f.Component) => {
+                            item.activate(true);
+                        });
+                }
+                State.Instance.SetUser = this._currentUser;
                 this._playerTimeController.StartTimer();
                 this._root.addComponent(this._soundController);
             }
-            
+
+        }
+        private HandleMovements(): void {
+            const projectiles: Projectile[] = [];
+            for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
+                // for(const proj)
+                if (figure.getChildren().length > 0) {
+                    for (const prj of figure.getChildren() as Projectile[]) {
+                        projectiles.push(prj);
+                    }
+                }
+            }
+            for (const projectile of projectiles) {
+                projectile.Move();
+            }
         }
     }
     async function Start(event: Event): Promise<void> {
@@ -78,7 +137,7 @@ namespace ChessGame {
         await FudgeCore.Project.loadResourcesFromHTML();
         FudgeCore.Debug.log("Project:", FudgeCore.Project.resources);
         _root = <f.Graph>FudgeCore.Project.resources["Graph|2021-05-23T14:11:54.579Z|49352"];
-
+        _inputSetting = await (await DataController.Instance.GetGameSetting()).Input;
 
         StartChessMatch();
     }
@@ -96,8 +155,9 @@ namespace ChessGame {
 
         Hud.start();
 
-
-        _canvas.addEventListener("click", _canvas.requestPointerLock);
+        if (_inputSetting.mouseLock) {
+            _canvas.addEventListener("click", _canvas.requestPointerLock);
+        }
         console.log(_root);
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
         f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
@@ -139,8 +199,8 @@ namespace ChessGame {
         const playerF: f.Node = figures.getChildrenByName("Player")[0];
         const enemyF: f.Node = figures.getChildrenByName("Enemy")[0];
         const places: f.Node = _root.getChildrenByName("Places")[0];
-        const player: ChessPlayer = new ChessPlayer(playerF, UserType.PLAYER, new TimeController())
-        const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, new TimeController())
+        const player: ChessPlayer = new ChessPlayer(playerF, UserType.PLAYER, new TimeController());
+        const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, new TimeController());
         _places = places.getChildren();
         for (let place of _places) {
             const rigidbody: f.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);

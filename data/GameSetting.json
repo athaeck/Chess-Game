@@ -6,7 +6,7 @@
     "Sound": {
         "ATMO": {
             "name": "AtmoRiver",
-            "volume": 0,
+            "volume": 0.5,
             "loop": true
         },
         "SELECT_FIGURE": {
@@ -31,11 +31,14 @@
         },
         "TIME": {
             "name": "ClockTick",
-            "volume": 0,
+            "volume": 1,
             "loop": true
         }
     },
     "SoundSetting": {
-        "withSound": true
+        "withSound": false
+    },
+    "Input": {
+        "mouseLock": false
     }
 }

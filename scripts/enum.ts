@@ -6,6 +6,6 @@ namespace ChessGame {
         SELECT_FIGURE= "SELECT_FIGURE", SELECT_FIELD= "SELECT_FIELD", HIT= "HIT", ATMO= "ATMO", TIME= "TIME", MOVE= "MOVE"
     }
     export enum SettingType{
-        Sound= "Sound", Time= "Time", SoundSetting= "SoundSetting"
+        Sound= "Sound", Time= "Time", SoundSetting= "SoundSetting", Input= "Input"
     }
 }

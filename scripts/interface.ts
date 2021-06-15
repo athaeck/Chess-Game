@@ -37,4 +37,7 @@ namespace ChessGame {
     export interface SoundSetting{
         withSound: boolean;
     }
+    export interface Input{
+        mouseLock: boolean;
+    }
 }
