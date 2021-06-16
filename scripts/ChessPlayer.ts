@@ -19,7 +19,7 @@ namespace ChessGame {
         public GetPlayerType(): UserType {
             return this._type;
         }
-        public RemoveFigure(figure: f.Node): void{
+        public RemoveFigure(figure: f.Node): void {
             this._graveYard.push(figure.name);
             const cmps: f.Component[] = figure.getAllComponents();
             for (const cmp of cmps) {
@@ -27,7 +27,7 @@ namespace ChessGame {
             }
             this._chessFigures.removeChild(figure);
         }
-        public AddFigure(figure: ChessFigure): void{
+        public AddFigure(figure: ChessFigure): void {
             this._chessFigures.appendChild(figure);
         }
     }

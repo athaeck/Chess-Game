@@ -1,0 +1,9 @@
+{
+    "entryPoints": "",
+    "out": "../../Documentation/Reference/Core/",
+    "name": "Fudge Core",
+    "readme": "none",
+    "excludePrivate": "true",
+    "excludeProtected": "true",
+    "plugin": "typedoc-plugin-merge-modules"
+}

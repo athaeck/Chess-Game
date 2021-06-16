@@ -211,13 +211,11 @@
      "Bauer": {
          "_attack": [{
                  "_fieldsX": 1,
-                 "_fieldsZ": 1,
-                 "_scalable": false
+                 "_fieldsZ": 1
              },
              {
                  "_fieldsX": 1,
-                 "_fieldsZ": -1,
-                 "_scalable": false
+                 "_fieldsZ": -1
              }
          ],
          "_movement": [{

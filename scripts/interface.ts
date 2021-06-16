@@ -10,12 +10,12 @@ namespace ChessGame {
     export interface Attack {
         _fieldsX: number;
         _fieldsZ: number;
-        _scalable: boolean;
+        // _scalable: boolean;
         // _movementBackwards: boolean;
     }
     export interface ChessPlayerSetting {
-        _movement:  Movement[];
-        _attack:  Attack[];
+        _movement: Movement[];
+        _attack: Attack[];
     }
     export interface ChessPlayerSettings {
         [key: string]: ChessPlayerSetting;
@@ -34,10 +34,13 @@ namespace ChessGame {
     export type Setting = {
         [key in SettingType]: any
     }
-    export interface SoundSetting{
+    export interface SoundSetting {
         withSound: boolean;
     }
-    export interface Input{
+    export interface Input {
         mouseLock: boolean;
     }
+    export type Duell = {
+        [key in UserType]: ChessFigure;
+    };
 }

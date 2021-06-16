@@ -35,8 +35,9 @@ namespace ChessGame {
         private _playerTimeController: TimeController;
         private _root: f.Graph;
         private _soundController: SoundController;
-        private _enemyOnTheWay: boolean = false;
-        private _collidingEnemy: ChessFigure;
+        private _duellMode: boolean = false;
+        private _duellController: DuellController;
+        private _cameraController: CameraController;
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph) {
             const random: number = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
@@ -46,52 +47,23 @@ namespace ChessGame {
             this._root = root;
             this._soundController = new SoundController(SoundType.TIME);
             this._root.addComponent(this._soundController);
+            this._cameraController = cameraController;
+            console.log(this._root);
         }
         public HandleGame(): void {
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController.UpdateCurrentUser(this._currentUser);
             this._inputController.HandleInput();
-            this.WatchMovementController();
-            this.DeSpawnEnemy();
+            // this.WatchMovementController();
+            // this.DeSpawnEnemy();
             this.HandleFinishMove();
-        }
-        private WatchMovementController(): void {
-            for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
-                const movementController: MovementController = figure.getComponent(MovementController);
-                if (movementController) {
-                    this._enemyOnTheWay = movementController.EnemyOnTheWay;
-                    this._collidingEnemy = movementController.CollidingEnemy;
-                }
-            }
-        }
-        private DeSpawnEnemy(): void {
-            let enemy: UserType;
-            switch (this._currentUser) {
-                case UserType.ENEMY:
-                    enemy = UserType.PLAYER;
-                    break;
-                default:
-                    enemy = UserType.ENEMY;
-                    break;
-            }
-            if (this._enemyOnTheWay) {
-                for (const figure of this._chessPlayer[enemy].GetFigures()) {
-                    if (this._enemyOnTheWay) {
-                        if (figure !== this._collidingEnemy) {
-                            figure.getAllComponents().forEach((item: f.Component) => {
-                                item.activate(false);
-                            });
-                            figure.activate(false);
-                        }
-                    }
-                }
-            }
+            this.WatchCheckmate();
         }
         private HandleFinishMove(): void {
             if (this._inputController.GetSelectionState()) {
                 this._playerTimeController.StoppTimer();
                 this._soundController.Delete();
-                this._enemyOnTheWay = false;
+                // this._enemyOnTheWay = false;
                 switch (this._currentUser) {
                     case UserType.PLAYER:
                         this._currentUser = UserType.ENEMY;
@@ -100,31 +72,32 @@ namespace ChessGame {
                         this._currentUser = UserType.PLAYER;
                         break;
                 }
-                for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
-                        figure.activate(true);
-                        figure.getAllComponents().forEach((item: f.Component) => {
-                            item.activate(true);
-                        });
-                }
                 State.Instance.SetUser = this._currentUser;
                 this._playerTimeController.StartTimer();
                 this._root.addComponent(this._soundController);
             }
 
         }
+        private WatchCheckmate(): void{
+            if (this._inputController.Checkmate) {
+                this._duellMode = true;
+                this._duellController = new DuellController;
+
+            }
+        }
         private HandleMovements(): void {
-            const projectiles: Projectile[] = [];
-            for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
-                // for(const proj)
-                if (figure.getChildren().length > 0) {
-                    for (const prj of figure.getChildren() as Projectile[]) {
-                        projectiles.push(prj);
-                    }
-                }
-            }
-            for (const projectile of projectiles) {
-                projectile.Move();
-            }
+            // const projectiles: Projectile[] = [];
+            // for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
+            //     // for(const proj)
+            //     if (figure.getChildren().length > 0) {
+            //         for (const prj of figure.getChildren() as Projectile[]) {
+            //             projectiles.push(prj);
+            //         }
+            //     }
+            // }
+            // for (const projectile of projectiles) {
+            //     projectile.Move();
+            // }
         }
     }
     async function Start(event: Event): Promise<void> {
@@ -242,7 +215,7 @@ namespace ChessGame {
     }
     function HandleGame(event: Event): void {
         _gameController.HandleGame();
-        ƒ.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
+        f.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
         _viewport.draw();
     }
 

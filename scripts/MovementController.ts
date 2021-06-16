@@ -40,12 +40,6 @@ namespace ChessGame {
             this._start = this._parent.GetPlace().getComponent(f.ComponentTransform);
             this._parent.addComponent(new CollisionController());
             this.CheckIfEnemyOccupyWay();
-            //     // this._start = this.getContainer().getComponent(f.ComponentTransform);
-            //     // this._body = this.getContainer().getComponent(f.ComponentRigidbody);
-            //     // this._parent = this.getContainer() as ChessFigure;
-            //     // this._parent.addComponent(new SoundController(SoundType.MOVE));
-            //     // this._parent.addComponent(this._collisionController);
-            //     // this.Move();
             this.HandleMove();
         }
         private HandleMove(): void {
@@ -54,9 +48,6 @@ namespace ChessGame {
             this._body.restitution = 0;
             const toTranslate: f.Vector3 = new f.Vector3(this._target.mtxLocal.translation.x - this._start.mtxLocal.translation.x, 0, this._target.mtxLocal.translation.z - this._start.mtxLocal.translation.z);
             switch (this._name) {
-                case "Springer":
-                    // this._body.applyLinearImpulse(new f.Vector3(0, 5, 0));
-                    break;
                 case "Bauer":
                     this._parent.UpdateInitScale();
                     break;
@@ -78,64 +69,15 @@ namespace ChessGame {
                     const chessFigure: ChessFigure = placeController.GetChessFigure();
                     if (chessFigure) {
                         if (this._parent.GetUser().GetPlayerType() !== chessFigure.GetUser().GetPlayerType()) {
-                            // this._enemyOnWay = true;
-                            // this._freeWayCheck = false;
-                            this._enemyOnTheWay = true;
-                            chessFigure.getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
-                            chessFigure.getComponent(f.ComponentRigidbody).friction = 0;
-                            this._collidingEnemy = chessFigure;
+                            // this._enemyOnTheWay = true;
+                            // chessFigure.getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
+                            // chessFigure.getComponent(f.ComponentRigidbody).friction = 0;
+                            // this._collidingEnemy = chessFigure;
+                            chessFigure.GetUser().RemoveFigure(chessFigure);
                         }
                     }
                 }
             }
         }
-
-
-        // private Move(): void {
-            // this._body.physicsType = f.PHYSICS_TYPE.DYNAMIC;
-            // this._body.mass = 5;
-            // this._body.restitution = 0;
-            // const toTranslate: f.Vector3 = new f.Vector3(this._target.mtxLocal.translation.x - this._start.mtxLocal.translation.x, 0, this._target.mtxLocal.translation.z - this._start.mtxLocal.translation.z);
-            // switch (this._name) {
-            //     case "Springer":
-            //         // this._body.applyLinearImpulse(new f.Vector3(0, 5, 0));
-            //         break;
-            //     case "Bauer":
-            //         this._parent.UpdateInitScale();
-            //         break;
-            //     default:
-            //         break;
-            // }
-        //     // this.SetDynamicToEnemy();
-        //     // this._body.translateBody(toTranslate);
-        //     // setTimeout(() => {
-                // this._body.physicsType = f.PHYSICS_TYPE.KINEMATIC;
-                // this._body.mass = 1;
-                // this._body.restitution = 0.5;
-                // const newPlaceController: PlaceController = this._target.getContainer().getComponent(PlaceController);
-                // const currentPlaceController: PlaceController = this._parent.GetPlace().getComponent(PlaceController);
-                // currentPlaceController.RemoveChessFigure();
-                // newPlaceController.SetChessFigure(this._parent);
-                // this._collisionController.Remove();
-                // this.getContainer().removeComponent(this);
-        //     // },         2000);
-        // }
-        // private SetDynamicToEnemy(): void {
-        //     // const targetVector: f.Vector3 = this._target.mtxLocal.translation;
-        //     // for (const place of this._places) {
-        //     //     const transform: f.ComponentTransform = place.getComponent(f.ComponentTransform);
-        //     //     if (Round(transform.mtxLocal.translation.x, 10) === Round(targetVector.x, 10) && Round(transform.mtxLocal.translation.z, 10) === Round(targetVector.z, 10)) {
-        //     //         const placeController: PlaceController = place.getComponent(PlaceController);
-        //     //         const chessFigure: ChessFigure = placeController.GetChessFigure();
-        //     //         if (chessFigure) {
-        //     //             if (this._parent.GetUser().GetPlayerType() !== chessFigure.GetUser().GetPlayerType()) {
-        //     //                 // this._enemyOnWay = true;
-        //     //                 chessFigure.getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
-        //     //                 chessFigure.getComponent(f.ComponentRigidbody).friction = 0;
-        //     //             }
-        //     //         }
-        //     //     }
-        //     // }
-        // }
     }
 }

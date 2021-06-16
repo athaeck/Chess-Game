@@ -14,6 +14,7 @@ namespace ChessGame {
         private _movements: f.ComponentTransform[];
         private _attacks: f.ComponentTransform[];
         private _isMovement: boolean = true;
+        private _isCheckmate: boolean = false;
         // private x: number = 0;
         private _selectionFinished: boolean = false;
         constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType) {
@@ -24,7 +25,25 @@ namespace ChessGame {
             this._currentPlayer = user;
             this._cameraController.UpdatePlayer(this._currentPlayer);
             this.GetChessFigureMovements();
-            console.log("InputController", this);
+        }
+        public get Checkmate(): boolean {
+            return this._isCheckmate;
+        }
+        public get CurrentDuell(): Duell {
+            const p: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
+            const o: ChessFigure = this._isMovement ? this._movements[this._movementIndex].getContainer().getComponent(PlaceController).GetChessFigure() : this._attacks[this._attackIndex].getContainer().getComponent(PlaceController).GetChessFigure();
+            switch (this._currentPlayer) {
+                case UserType.ENEMY:
+                    return {
+                        enemy: p,
+                        player: o
+                    };
+                default:
+                    return {
+                        player: p,
+                        enemy: o
+                    };
+            }
         }
         public UpdateCurrentUser(user: UserType): void {
             if (user !== this._currentPlayer) {
@@ -40,6 +59,7 @@ namespace ChessGame {
         public GetSelectionState(): boolean {
             return this._selectionFinished;
         }
+
         public HandleInput(): void {
             this.HandleSelectionControl();
             this.HandleCameraPosition();
@@ -112,7 +132,7 @@ namespace ChessGame {
                     this.SelectTimerReset();
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_DOWN])) {
-                   if (this._isMovement) {
+                    if (this._isMovement) {
                         if (this._movements.length > 0) {
                             this._movementIndex--;
                         }
@@ -121,9 +141,9 @@ namespace ChessGame {
                             this._attackIndex--;
                         }
                     }
-                   this.CheckIfValidIndex();
-                   this.HandleSoundController(SoundType.SELECT_FIELD);
-                   this.SelectTimerReset();
+                    this.CheckIfValidIndex();
+                    this.HandleSoundController(SoundType.SELECT_FIELD);
+                    this.SelectTimerReset();
                 }
             }
 
@@ -147,6 +167,22 @@ namespace ChessGame {
             }
             this.ShowSelection();
         }
+        private IsCheckmate(): boolean {
+            let target: f.ComponentTransform;
+            if (this._isMovement) {
+                target = this._movements[this._movementIndex];
+            } else {
+                target = this._attacks[this._attackIndex];
+            }
+            let targetName: string;
+            if (target !== undefined) {
+                const placeC: PlaceController = target.getContainer().getComponent(PlaceController);
+                if (!placeC.IsChessFigureNull()) {
+                    targetName = placeC.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer ? placeC.GetChessFigure().name : undefined;
+                }
+            }
+            return targetName !== undefined && targetName === "König" ? true : false;
+        }
         private Move(): void {
             const movementController: MovementController = new MovementController();
             const currentFigure: f.Node = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
@@ -161,8 +197,12 @@ namespace ChessGame {
                 }
             }
             if (currentMove) {
-                movementController.Init(currentMove, this._places, currentFigure.name);
-                currentFigure.addComponent(movementController);
+                if (!this.IsCheckmate()) {
+                    movementController.Init(currentMove, this._places, currentFigure.name);
+                    currentFigure.addComponent(movementController);
+                } else {
+                    this._isCheckmate = true;
+                }
             }
         }
         private HandleSoundController(soundType: SoundType): void {
@@ -181,8 +221,6 @@ namespace ChessGame {
             }
         }
         private CheckIfValidIndex(): void {
-            console.log(this._attacks);
-            console.log(this._movements)
             if (this._currentChessFigureIndex > this._player[this._currentPlayer].GetFigures().length - 1) {
                 this._currentChessFigureIndex = 0;
             }
@@ -195,6 +233,12 @@ namespace ChessGame {
             }
             if (this._movementIndex < 0) {
                 this._movementIndex = this._movements.length - 1;
+            }
+            if (this._attackIndex > this._attacks.length - 1) {
+                this._attackIndex = 0;
+            }
+            if (this._attackIndex < 0) {
+                this._attackIndex = this._attacks.length - 1;
             }
 
         }
@@ -221,7 +265,6 @@ namespace ChessGame {
             }
         }
         private GetChessFigureMovements(): void {
-            // console.log("-------------------------------------------");
             const POSSIBLEMOVEMENTS: f.ComponentTransform[] = [];
             const POSSIBLEATTACKS: f.ComponentTransform[] = [];
             let direction: number = 1;
@@ -234,7 +277,6 @@ namespace ChessGame {
                     break;
             }
             const currentChessFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
-            // console.log(currentChessFigure)
             const chessPlayerSetting: ChessPlayerSetting = currentChessFigure.GetChessFigureMovement();
             const currentPlaceTransform: f.ComponentTransform = currentChessFigure.GetPlace().getComponent(f.ComponentTransform);
             const currentPlace: f.Vector3 = currentPlaceTransform.mtxLocal.translation;
@@ -261,7 +303,6 @@ namespace ChessGame {
                                     }
                                 }
                             } else {
-                                // console.log("....")
                                 const targetPosition: f.Vector3 = new f.Vector3(Round(direction * movement._fieldsX + currentPlace.x, 10), 0, Round(direction * movement._fieldsZ + currentPlace.z, 10));
                                 for (const place of this._places) {
                                     const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
@@ -298,7 +339,6 @@ namespace ChessGame {
                                         const placeTransform: f.ComponentTransform = place.getComponent(f.ComponentTransform);
                                         if (Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
                                             const placeController: PlaceController = place.getComponent(PlaceController);
-                                            // console.log(placeController);
                                             if (!placeController.IsChessFigureNull()) {
                                                 if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
                                                     POSSIBLEMOVEMENTS.push(placeTransform);
@@ -318,23 +358,22 @@ namespace ChessGame {
                         // currentMove++;
                     }
                 } else {
-                    // console.log(".....");
                     if (chessPlayerSetting._attack !== null) {
                         for (const attack of chessPlayerSetting._attack) {
-                            if (!attack._scalable) {
-                                const targetPosition: f.Vector3 = new f.Vector3(Round(direction * attack._fieldsX + currentPlace.x, 10), 0, Round(direction * attack._fieldsZ + currentPlace.z, 10));
-                                for (const place of this._places) {
-                                    const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
-                                    if (Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
-                                        const placeController: PlaceController = place.getComponent(PlaceController);
-                                        if (!placeController.IsChessFigureNull()) {
-                                            if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
-                                                POSSIBLEATTACKS.push(placeTrans);
-                                            }
+                            // if (!attack._scalable) {
+                            const targetPosition: f.Vector3 = new f.Vector3(Round(direction * attack._fieldsX + currentPlace.x, 10), 0, Round(direction * attack._fieldsZ + currentPlace.z, 10));
+                            for (const place of this._places) {
+                                const placeTrans: f.ComponentTransform = place.getComponent(f.ComponentTransform);
+                                if (Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                    const placeController: PlaceController = place.getComponent(PlaceController);
+                                    if (!placeController.IsChessFigureNull()) {
+                                        if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
+                                            POSSIBLEATTACKS.push(placeTrans);
                                         }
                                     }
                                 }
                             }
+                            // }
                         }
                     } else {
                         this._isMovement = true;
