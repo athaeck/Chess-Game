@@ -21,8 +21,12 @@ namespace ChessGame {
                 posY = this._place.mtxLocal.translation.y + 1;
                 componentMesh.mtxPivot.scale(new f.Vector3(0.8, 2, 0.8));
             }
-
-            let materialSolidWhite: f.Material = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user.GetPlayerType() === UserType.PLAYER ? "Black" : "White")));
+            let materialSolidWhite: f.Material;
+            if (name !== "König") {
+                materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user.GetPlayerType() === UserType.PLAYER ? "Black" : "White")));
+            } else {
+                materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS("YELLOW")));
+            }
             let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);
             // this.addComponent(new CollisionController())

@@ -2,21 +2,6 @@
   "bundle": {
     "commonSourceDirectory": "../..",
     "sourceFiles": [
-      "../references/FudgeCore/FudgeAid/Source/References.ts",
-      "../references/FudgeCore/FudgeAid/Source/Arithmetic/Arith.ts",
-      "../references/FudgeCore/FudgeAid/Source/Arithmetic/ArithBisection.ts",
-      "../references/FudgeCore/FudgeAid/Source/Camera/CameraOrbit.ts",
-      "../references/FudgeCore/FudgeAid/Source/Camera/CameraOrbitMovingFocus.ts",
-      "../references/FudgeCore/FudgeAid/Source/Canvas/Canvas.ts",
-      "../references/FudgeCore/FudgeAid/Source/Geometry/Node.ts",
-      "../references/FudgeCore/FudgeAid/Source/Geometry/NodeArrow.ts",
-      "../references/FudgeCore/FudgeAid/Source/Geometry/NodeCoordinateSystem.ts",
-      "../references/FudgeCore/FudgeAid/Source/Light/NodeLightSetup.ts",
-      "../references/FudgeCore/FudgeAid/Source/Sprite/NodeSprite.ts",
-      "../references/FudgeCore/FudgeAid/Source/Sprite/SpriteSheetAnimation.ts",
-      "../references/FudgeCore/FudgeAid/Source/StateMachine/ComponentStateMachine.ts",
-      "../references/FudgeCore/FudgeAid/Source/StateMachine/StateMachine.ts",
-      "../references/FudgeCore/FudgeAid/Source/Viewport/Viewport.ts",
       "../scripts/CameraController.ts",
       "../scripts/GameObject.ts",
       "../scripts/ChessFigure.ts",
@@ -50,7 +35,7 @@
         },
         {
           "pos": 15,
-          "end": 83590,
+          "end": 56070,
           "kind": "text"
         }
       ],
@@ -78,7 +63,7 @@
       "sections": [
         {
           "pos": 0,
-          "end": 22138,
+          "end": 9957,
           "kind": "text"
         }
       ]

@@ -1,678 +1,4 @@
 "use strict";
-///<reference types="../../Core/Build/FudgeCore"/>
-var ƒ = FudgeCore;
-var ƒAid = FudgeAid;
-var FudgeAid;
-(function (FudgeAid) {
-    ƒ.Serializer.registerNamespace(FudgeAid);
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    /**
-     * Abstract class supporting versious arithmetical helper functions
-     */
-    class Arith {
-        /**
-         * Returns one of the values passed in, either _value if within _min and _max or the boundary being exceeded by _value
-         */
-        static clamp(_value, _min, _max, _isSmaller = (_value1, _value2) => { return _value1 < _value2; }) {
-            if (_isSmaller(_value, _min))
-                return _min;
-            if (_isSmaller(_max, _value))
-                return _max;
-            return _value;
-        }
-    }
-    FudgeAid.Arith = Arith;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    /**
-     * Within a given precision, an object of this class finds the parameter value at which a given function
-     * switches its boolean return value using interval splitting (bisection).
-     * Pass the type of the parameter and the type the precision is measured in.
-     */
-    class ArithBisection {
-        /**
-         * Creates a new Solver
-         * @param _function A function that takes an argument of the generic type <Parameter> and returns a boolean value.
-         * @param _divide A function splitting the interval to find a parameter for the next iteration, may simply be the arithmetic mean
-         * @param _isSmaller A function that determines a difference between the borders of the current interval and compares this to the given precision
-         */
-        constructor(_function, _divide, _isSmaller) {
-            this.function = _function;
-            this.divide = _divide;
-            this.isSmaller = _isSmaller;
-        }
-        /**
-         * Finds a solution with the given precision in the given interval using the functions this Solver was constructed with.
-         * After the method returns, find the data in this objects properties.
-         * @param _left The parameter on one side of the interval.
-         * @param _right The parameter on the other side, may be "smaller" than [[_left]].
-         * @param _epsilon The desired precision of the solution.
-         * @param _leftValue The value on the left side of the interval, omit if yet unknown or pass in if known for better performance.
-         * @param _rightValue The value on the right side of the interval, omit if yet unknown or pass in if known for better performance.
-         * @throws Error if both sides of the interval return the same value.
-         */
-        solve(_left, _right, _epsilon, _leftValue = undefined, _rightValue = undefined) {
-            this.left = _left;
-            this.leftValue = _leftValue || this.function(_left);
-            this.right = _right;
-            this.rightValue = _rightValue || this.function(_right);
-            if (this.isSmaller(_left, _right, _epsilon))
-                return;
-            if (this.leftValue == this.rightValue)
-                throw (new Error("Interval solver can't operate with identical function values on both sides of the interval"));
-            let between = this.divide(_left, _right);
-            let betweenValue = this.function(between);
-            if (betweenValue == this.leftValue)
-                this.solve(between, this.right, _epsilon, betweenValue, this.rightValue);
-            else
-                this.solve(this.left, between, _epsilon, this.leftValue, betweenValue);
-        }
-        toString() {
-            let out = "";
-            out += `left: ${this.left.toString()} -> ${this.leftValue}`;
-            out += "\n";
-            out += `right: ${this.right.toString()} -> ${this.rightValue}`;
-            return out;
-        }
-    }
-    FudgeAid.ArithBisection = ArithBisection;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    class CameraOrbit extends ƒ.Node {
-        constructor(_cmpCamera, _distanceStart = 2, _maxRotX = 75, _minDistance = 1, _maxDistance = 10) {
-            super("CameraOrbit");
-            this.axisRotateX = new ƒ.Axis("RotateX", 1, 0 /* PROPORTIONAL */, true);
-            this.axisRotateY = new ƒ.Axis("RotateY", 1, 0 /* PROPORTIONAL */, true);
-            this.axisDistance = new ƒ.Axis("Distance", 1, 0 /* PROPORTIONAL */, true);
-            this.hndAxisOutput = (_event) => {
-                let output = _event.detail.output;
-                switch (_event.target.name) {
-                    case "RotateX":
-                        this.rotateX(output);
-                        break;
-                    case "RotateY":
-                        this.rotateY(output);
-                        break;
-                    case "Distance":
-                        this.distance += output;
-                }
-            };
-            this.maxRotX = Math.min(_maxRotX, 89);
-            this.minDistance = _minDistance;
-            this.maxDistance = _maxDistance;
-            let cmpTransform = new ƒ.ComponentTransform();
-            this.addComponent(cmpTransform);
-            this.rotatorX = new ƒ.Node("CameraRotationX");
-            this.rotatorX.addComponent(new ƒ.ComponentTransform());
-            this.addChild(this.rotatorX);
-            this.translator = new ƒ.Node("CameraTranslate");
-            this.translator.addComponent(new ƒ.ComponentTransform());
-            this.translator.mtxLocal.rotateY(180);
-            this.rotatorX.addChild(this.translator);
-            this.translator.addComponent(_cmpCamera);
-            this.distance = _distanceStart;
-            this.axisRotateX.addEventListener("output" /* OUTPUT */, this.hndAxisOutput);
-            this.axisRotateY.addEventListener("output" /* OUTPUT */, this.hndAxisOutput);
-            this.axisDistance.addEventListener("output" /* OUTPUT */, this.hndAxisOutput);
-        }
-        get cmpCamera() {
-            return this.translator.getComponent(ƒ.ComponentCamera);
-        }
-        get nodeCamera() {
-            return this.translator;
-        }
-        set distance(_distance) {
-            let newDistance = Math.min(this.maxDistance, Math.max(this.minDistance, _distance));
-            this.translator.mtxLocal.translation = ƒ.Vector3.Z(newDistance);
-        }
-        get distance() {
-            return this.translator.mtxLocal.translation.z;
-        }
-        set rotationY(_angle) {
-            this.mtxLocal.rotation = ƒ.Vector3.Y(_angle);
-        }
-        get rotationY() {
-            return this.mtxLocal.rotation.y;
-        }
-        set rotationX(_angle) {
-            _angle = Math.min(Math.max(-this.maxRotX, _angle), this.maxRotX);
-            this.rotatorX.mtxLocal.rotation = ƒ.Vector3.X(_angle);
-        }
-        get rotationX() {
-            return this.rotatorX.mtxLocal.rotation.x;
-        }
-        rotateY(_delta) {
-            this.mtxLocal.rotateY(_delta);
-        }
-        rotateX(_delta) {
-            this.rotationX = this.rotatorX.mtxLocal.rotation.x + _delta;
-        }
-        // set position of camera component relative to the center of orbit
-        positionCamera(_posWorld) {
-            let difference = ƒ.Vector3.DIFFERENCE(_posWorld, this.mtxWorld.translation);
-            let geo = difference.geo;
-            this.rotationY = geo.longitude;
-            this.rotationX = -geo.latitude;
-            this.distance = geo.magnitude;
-        }
-    }
-    FudgeAid.CameraOrbit = CameraOrbit;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    class CameraOrbitMovingFocus extends FudgeAid.CameraOrbit {
-        constructor(_cmpCamera, _distanceStart = 5, _maxRotX = 85, _minDistance = 0, _maxDistance = Infinity) {
-            super(_cmpCamera, _distanceStart, _maxRotX, _minDistance, _maxDistance);
-            this.axisTranslateX = new ƒ.Axis("TranslateX", 1, 0 /* PROPORTIONAL */, true);
-            this.axisTranslateY = new ƒ.Axis("TranslateY", 1, 0 /* PROPORTIONAL */, true);
-            this.axisTranslateZ = new ƒ.Axis("TranslateZ", 1, 0 /* PROPORTIONAL */, true);
-            this.hndAxisOutput = (_event) => {
-                let output = _event.detail.output;
-                switch (_event.target.name) {
-                    case "TranslateX":
-                        this.translateX(output);
-                        break;
-                    case "TranslateY":
-                        this.translateY(output);
-                        break;
-                    case "TranslateZ":
-                        this.translateZ(output);
-                }
-            };
-            this.name = "CameraOrbitMovingFocus";
-            this.axisTranslateX.addEventListener("output" /* OUTPUT */, this.hndAxisOutput);
-            this.axisTranslateY.addEventListener("output" /* OUTPUT */, this.hndAxisOutput);
-            this.axisTranslateZ.addEventListener("output" /* OUTPUT */, this.hndAxisOutput);
-        }
-        translateX(_delta) {
-            this.mtxLocal.translateX(_delta);
-        }
-        translateY(_delta) {
-            let translation = this.rotatorX.mtxWorld.getY();
-            translation.normalize(_delta);
-            this.mtxLocal.translate(translation, false);
-        }
-        translateZ(_delta) {
-            // this.mtxLocal.translateZ(_delta);
-            let translation = this.rotatorX.mtxWorld.getZ();
-            translation.normalize(_delta);
-            this.mtxLocal.translate(translation, false);
-        }
-    }
-    FudgeAid.CameraOrbitMovingFocus = CameraOrbitMovingFocus;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    let IMAGE_RENDERING;
-    (function (IMAGE_RENDERING) {
-        IMAGE_RENDERING["AUTO"] = "auto";
-        IMAGE_RENDERING["SMOOTH"] = "smooth";
-        IMAGE_RENDERING["HIGH_QUALITY"] = "high-quality";
-        IMAGE_RENDERING["CRISP_EDGES"] = "crisp-edges";
-        IMAGE_RENDERING["PIXELATED"] = "pixelated";
-    })(IMAGE_RENDERING = FudgeAid.IMAGE_RENDERING || (FudgeAid.IMAGE_RENDERING = {}));
-    /**
-     * Adds comfort methods to create a render canvas
-     */
-    class Canvas {
-        static create(_fillParent = true, _imageRendering = IMAGE_RENDERING.AUTO, _width = 800, _height = 600) {
-            let canvas = document.createElement("canvas");
-            canvas.id = "FUDGE";
-            let style = canvas.style;
-            style.imageRendering = _imageRendering;
-            style.width = _width + "px";
-            style.height = _height + "px";
-            style.marginBottom = "-0.25em";
-            if (_fillParent) {
-                style.width = "100%";
-                style.height = "100%";
-            }
-            return canvas;
-        }
-    }
-    FudgeAid.Canvas = Canvas;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    class Node extends ƒ.Node {
-        constructor(_name = Node.getNextName(), _transform, _material, _mesh) {
-            super(_name);
-            if (_transform)
-                this.addComponent(new ƒ.ComponentTransform(_transform));
-            if (_material)
-                this.addComponent(new ƒ.ComponentMaterial(_material));
-            if (_mesh)
-                this.addComponent(new ƒ.ComponentMesh(_mesh));
-        }
-        static getNextName() {
-            return "ƒAidNode_" + Node.count++;
-        }
-        get mtxMeshPivot() {
-            let cmpMesh = this.getComponent(ƒ.ComponentMesh);
-            return cmpMesh ? cmpMesh.mtxPivot : null;
-        }
-        async deserialize(_serialization) {
-            // Quick and maybe hacky solution. Created node is completely dismissed and a recreation of the baseclass gets return. Otherwise, components will be doubled...
-            let node = new ƒ.Node(_serialization.name);
-            await node.deserialize(_serialization);
-            // console.log(node);
-            return node;
-        }
-    }
-    Node.count = 0;
-    FudgeAid.Node = Node;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    class NodeArrow extends FudgeAid.Node {
-        constructor(_name, _color) {
-            super(_name, ƒ.Matrix4x4.IDENTITY());
-            let shaft = new FudgeAid.Node(_name + "Shaft", ƒ.Matrix4x4.IDENTITY(), NodeArrow.internalResources.get("Material"), NodeArrow.internalResources.get("Shaft"));
-            let head = new FudgeAid.Node(_name + "Head", ƒ.Matrix4x4.IDENTITY(), NodeArrow.internalResources.get("Material"), NodeArrow.internalResources.get("Head"));
-            shaft.mtxLocal.scale(new ƒ.Vector3(0.01, 0.01, 1));
-            head.mtxLocal.translateZ(0.5);
-            head.mtxLocal.scale(new ƒ.Vector3(0.05, 0.05, 0.1));
-            head.mtxLocal.rotateX(90);
-            shaft.getComponent(ƒ.ComponentMaterial).clrPrimary = _color;
-            head.getComponent(ƒ.ComponentMaterial).clrPrimary = _color;
-            this.addChild(shaft);
-            this.addChild(head);
-        }
-        static createInternalResources() {
-            let map = new Map();
-            map.set("Shaft", new ƒ.MeshCube("ArrowShaft"));
-            map.set("Head", new ƒ.MeshPyramid("ArrowHead"));
-            let coat = new ƒ.CoatColored(ƒ.Color.CSS("white"));
-            map.set("Material", new ƒ.Material("Arrow", ƒ.ShaderUniColor, coat));
-            map.forEach((_resource) => ƒ.Project.deregister(_resource));
-            return map;
-        }
-        set color(_color) {
-            for (let child of this.getChildren()) {
-                child.getComponent(ƒ.ComponentMaterial).clrPrimary.copy(_color);
-            }
-        }
-    }
-    NodeArrow.internalResources = NodeArrow.createInternalResources();
-    FudgeAid.NodeArrow = NodeArrow;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    class NodeCoordinateSystem extends FudgeAid.Node {
-        constructor(_name = "CoordinateSystem", _transform) {
-            super(_name, _transform);
-            let arrowRed = new FudgeAid.NodeArrow("ArrowRed", new ƒ.Color(1, 0, 0, 1));
-            let arrowGreen = new FudgeAid.NodeArrow("ArrowGreen", new ƒ.Color(0, 1, 0, 1));
-            let arrowBlue = new FudgeAid.NodeArrow("ArrowBlue", new ƒ.Color(0, 0, 1, 1));
-            arrowRed.mtxLocal.rotateY(90);
-            arrowGreen.mtxLocal.rotateX(-90);
-            this.addChild(arrowRed);
-            this.addChild(arrowGreen);
-            this.addChild(arrowBlue);
-        }
-    }
-    FudgeAid.NodeCoordinateSystem = NodeCoordinateSystem;
-})(FudgeAid || (FudgeAid = {}));
-/// <reference path="../../../Core/Build/FudgeCore.d.ts"/>
-var FudgeAid;
-/// <reference path="../../../Core/Build/FudgeCore.d.ts"/>
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    /**
-     * Adds a light setup to the node given, consisting of an ambient light, a directional key light and a directional back light.
-     * Exept of the node to become the container, all parameters are optional and provided default values for general purpose.
-     */
-    function addStandardLightComponents(_node, _clrAmbient = new ƒ.Color(0.2, 0.2, 0.2), _clrKey = new ƒ.Color(0.9, 0.9, 0.9), _clrBack = new ƒ.Color(0.6, 0.6, 0.6), _posKey = new ƒ.Vector3(4, 12, 8), _posBack = new ƒ.Vector3(-1, -0.5, -3)) {
-        let key = new ƒ.ComponentLight(new ƒ.LightDirectional(_clrKey));
-        key.mtxPivot.translate(_posKey);
-        key.mtxPivot.lookAt(ƒ.Vector3.ZERO());
-        let back = new ƒ.ComponentLight(new ƒ.LightDirectional(_clrBack));
-        back.mtxPivot.translate(_posBack);
-        back.mtxPivot.lookAt(ƒ.Vector3.ZERO());
-        let ambient = new ƒ.ComponentLight(new ƒ.LightAmbient(_clrAmbient));
-        _node.addComponent(key);
-        _node.addComponent(back);
-        _node.addComponent(ambient);
-    }
-    FudgeAid.addStandardLightComponents = addStandardLightComponents;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    /**
-     * Handles the animation cycle of a sprite on a [[Node]]
-     */
-    class NodeSprite extends ƒ.Node {
-        constructor(_name) {
-            super(_name);
-            this.framerate = 12; // animation frames per second, single frames can be shorter or longer based on their timescale
-            this.frameCurrent = 0;
-            this.direction = 1;
-            /**
-             * Show the next frame of the sequence or start anew when the end or the start was reached, according to the direction of playing
-             */
-            this.showFrameNext = (_event) => {
-                this.frameCurrent = (this.frameCurrent + this.direction + this.animation.frames.length) % this.animation.frames.length;
-                this.showFrame(this.frameCurrent);
-            };
-            this.cmpMesh = new ƒ.ComponentMesh(NodeSprite.mesh);
-            // Define coat from the SpriteSheet to use when rendering
-            this.cmpMaterial = new ƒ.ComponentMaterial(new ƒ.Material(_name, ƒ.ShaderTexture, null));
-            this.addComponent(this.cmpMesh);
-            this.addComponent(this.cmpMaterial);
-        }
-        static createInternalResource() {
-            let mesh = new ƒ.MeshSprite("Sprite");
-            ƒ.Project.deregister(mesh);
-            return mesh;
-        }
-        setAnimation(_animation) {
-            this.animation = _animation;
-            if (this.timer)
-                ƒ.Time.game.deleteTimer(this.timer);
-            this.showFrame(0);
-        }
-        /**
-         * Show a specific frame of the sequence
-         */
-        showFrame(_index) {
-            let spriteFrame = this.animation.frames[_index];
-            this.cmpMesh.mtxPivot = spriteFrame.mtxPivot;
-            this.cmpMaterial.mtxPivot = spriteFrame.mtxTexture;
-            this.cmpMaterial.material.setCoat(this.animation.spritesheet);
-            this.frameCurrent = _index;
-            this.timer = ƒ.Time.game.setTimer(spriteFrame.timeScale * 1000 / this.framerate, 1, this.showFrameNext);
-        }
-        /**
-         * Sets the direction for animation playback, negativ numbers make it play backwards.
-         */
-        setFrameDirection(_direction) {
-            this.direction = Math.floor(_direction);
-        }
-    }
-    NodeSprite.mesh = NodeSprite.createInternalResource();
-    FudgeAid.NodeSprite = NodeSprite;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    /**
-     * Describes a single frame of a sprite animation
-     */
-    class SpriteFrame {
-    }
-    FudgeAid.SpriteFrame = SpriteFrame;
-    /**
-     * Convenience for creating a [[CoatTexture]] to use as spritesheet
-     */
-    function createSpriteSheet(_name, _image) {
-        let coat = new ƒ.CoatTextured();
-        coat.name = _name;
-        let texture = new ƒ.TextureImage();
-        texture.image = _image;
-        coat.texture = texture;
-        return coat;
-    }
-    FudgeAid.createSpriteSheet = createSpriteSheet;
-    /**
-     * Handles a series of [[SpriteFrame]]s to be mapped onto a [[MeshSprite]]
-     * Contains the [[MeshSprite]], the [[Material]] and the spritesheet-texture
-     */
-    class SpriteSheetAnimation {
-        constructor(_name, _spritesheet) {
-            this.frames = [];
-            this.name = _name;
-            this.spritesheet = _spritesheet;
-        }
-        /**
-         * Stores a series of frames in this [[Sprite]], calculating the matrices to use in the components of a [[NodeSprite]]
-         */
-        generate(_rects, _resolutionQuad, _origin) {
-            let img = this.spritesheet.texture.texImageSource;
-            this.frames = [];
-            let framing = new ƒ.FramingScaled();
-            framing.setScale(1 / img.width, 1 / img.height);
-            let count = 0;
-            for (let rect of _rects) {
-                let frame = this.createFrame(this.name + `${count}`, framing, rect, _resolutionQuad, _origin);
-                frame.timeScale = 1;
-                this.frames.push(frame);
-                count++;
-            }
-        }
-        /**
-         * Add sprite frames using a grid on the spritesheet defined by a rectangle to start with, the number of frames,
-         * the resolution which determines the size of the sprites mesh based on the number of pixels of the texture frame,
-         * the offset from one cell of the grid to the next in the sequence and, in case the sequence spans over more than one row or column,
-         * the offset to move the start rectangle when the margin of the texture is reached and wrapping occurs.
-         */
-        generateByGrid(_startRect, _frames, _resolutionQuad, _origin, _offsetNext, _offsetWrap = ƒ.Vector2.ZERO()) {
-            let img = this.spritesheet.texture.texImageSource;
-            let rectImage = new ƒ.Rectangle(0, 0, img.width, img.height);
-            let rect = _startRect.copy;
-            let rects = [];
-            while (_frames--) {
-                rects.push(rect.copy);
-                rect.position.add(_offsetNext);
-                if (rectImage.covers(rect))
-                    continue;
-                _startRect.position.add(_offsetWrap);
-                rect = _startRect.copy;
-                if (!rectImage.covers(rect))
-                    break;
-            }
-            rects.forEach((_rect) => ƒ.Debug.log(_rect.toString()));
-            this.generate(rects, _resolutionQuad, _origin);
-        }
-        createFrame(_name, _framing, _rect, _resolutionQuad, _origin) {
-            let img = this.spritesheet.texture.texImageSource;
-            let rectTexture = new ƒ.Rectangle(0, 0, img.width, img.height);
-            let frame = new SpriteFrame();
-            frame.rectTexture = _framing.getRect(_rect);
-            frame.rectTexture.position = _framing.getPoint(_rect.position, rectTexture);
-            let rectQuad = new ƒ.Rectangle(0, 0, _rect.width / _resolutionQuad, _rect.height / _resolutionQuad, _origin);
-            frame.mtxPivot = ƒ.Matrix4x4.IDENTITY();
-            frame.mtxPivot.translate(new ƒ.Vector3(rectQuad.position.x + rectQuad.size.x / 2, -rectQuad.position.y - rectQuad.size.y / 2, 0));
-            frame.mtxPivot.scaleX(rectQuad.size.x);
-            frame.mtxPivot.scaleY(rectQuad.size.y);
-            // ƒ.Debug.log(rectQuad.toString());
-            frame.mtxTexture = ƒ.Matrix3x3.IDENTITY();
-            frame.mtxTexture.translate(frame.rectTexture.position);
-            frame.mtxTexture.scale(frame.rectTexture.size);
-            return frame;
-        }
-    }
-    FudgeAid.SpriteSheetAnimation = SpriteSheetAnimation;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    var ƒ = FudgeCore;
-    class ComponentStateMachine extends ƒ.ComponentScript {
-        transit(_next) {
-            this.instructions.transit(this.stateCurrent, _next, this);
-        }
-        act() {
-            this.instructions.act(this.stateCurrent, this);
-        }
-    }
-    FudgeAid.ComponentStateMachine = ComponentStateMachine;
-})(FudgeAid || (FudgeAid = {}));
-/**
- * State machine offers a structure and fundamental functionality for state machines
- * <State> should be an enum defining the various states of the machine
- */
-var FudgeAid;
-/**
- * State machine offers a structure and fundamental functionality for state machines
- * <State> should be an enum defining the various states of the machine
- */
-(function (FudgeAid) {
-    /**
-     * Core functionality of the state machine, holding solely the current state and, while in transition, the next state,
-     * the instructions for the machine and comfort methods to transit and act.
-     */
-    class StateMachine {
-        transit(_next) {
-            this.instructions.transit(this.stateCurrent, _next, this);
-        }
-        act() {
-            this.instructions.act(this.stateCurrent, this);
-        }
-    }
-    FudgeAid.StateMachine = StateMachine;
-    /**
-     * Set of instructions for a state machine. The set keeps all methods for dedicated actions defined for the states
-     * and all dedicated methods defined for transitions to other states, as well as default methods.
-     * Instructions exist independently from StateMachines. A statemachine instance is passed as parameter to the instruction set.
-     * Multiple statemachine-instances can thus use the same instruction set and different instruction sets could operate on the same statemachine.
-     */
-    class StateMachineInstructions extends Map {
-        /** Define dedicated transition method to transit from one state to another*/
-        setTransition(_current, _next, _transition) {
-            let active = this.getStateMethods(_current);
-            active.transitions.set(_next, _transition);
-        }
-        /** Define dedicated action method for a state */
-        setAction(_current, _action) {
-            let active = this.getStateMethods(_current);
-            active.action = _action;
-        }
-        /** Default transition method to invoke if no dedicated transition exists, should be overriden in subclass */
-        transitDefault(_machine) {
-            //
-        }
-        /** Default action method to invoke if no dedicated action exists, should be overriden in subclass */
-        actDefault(_machine) {
-            //
-        }
-        /** Invoke a dedicated transition method if found for the current and the next state, or the default method */
-        transit(_current, _next, _machine) {
-            _machine.stateNext = _next;
-            try {
-                let active = this.get(_current);
-                let transition = active.transitions.get(_next);
-                transition(_machine);
-            }
-            catch (_error) {
-                // console.info(_error.message);
-                this.transitDefault(_machine);
-            }
-            finally {
-                _machine.stateCurrent = _next;
-                _machine.stateNext = undefined;
-            }
-        }
-        /** Invoke the dedicated action method if found for the current state, or the default method */
-        act(_current, _machine) {
-            try {
-                let active = this.get(_current);
-                active.action(_machine);
-            }
-            catch (_error) {
-                // console.info(_error.message);
-                this.actDefault(_machine);
-            }
-        }
-        /** Find the instructions dedicated for the current state or create an empty set for it */
-        getStateMethods(_current) {
-            let active = this.get(_current);
-            if (!active) {
-                active = { action: null, transitions: new Map() };
-                this.set(_current, active);
-            }
-            return active;
-        }
-    }
-    FudgeAid.StateMachineInstructions = StateMachineInstructions;
-})(FudgeAid || (FudgeAid = {}));
-var FudgeAid;
-(function (FudgeAid) {
-    class Viewport {
-        static create(_branch) {
-            let cmpCamera = new ƒ.ComponentCamera();
-            cmpCamera.mtxPivot.translate(ƒ.Vector3.Z(4));
-            cmpCamera.mtxPivot.rotateY(180);
-            let canvas = FudgeAid.Canvas.create();
-            document.body.appendChild(canvas);
-            let viewport = new ƒ.Viewport();
-            viewport.initialize("ƒAid-Viewport", _branch, cmpCamera, canvas);
-            return viewport;
-        }
-        static expandCameraToInteractiveOrbit(_viewport, _showFocus = true, _speedCameraRotation = 1, _speedCameraTranslation = 0.01, _speedCameraDistance = 0.001) {
-            _viewport.setFocus(true);
-            _viewport.activatePointerEvent("\u0192pointerdown" /* DOWN */, true);
-            _viewport.activatePointerEvent("\u0192pointermove" /* MOVE */, true);
-            _viewport.activateWheelEvent("\u0192wheel" /* WHEEL */, true);
-            _viewport.addEventListener("\u0192pointerdown" /* DOWN */, hndPointerDown);
-            _viewport.addEventListener("\u0192pointermove" /* MOVE */, hndPointerMove);
-            _viewport.addEventListener("\u0192wheel" /* WHEEL */, hndWheelMove);
-            let cntMouseHorizontal = new ƒ.Control("MouseHorizontal");
-            let cntMouseVertical = new ƒ.Control("MouseVertical");
-            // camera setup
-            let camera;
-            camera = new FudgeAid.CameraOrbitMovingFocus(_viewport.camera, 5, 85, 0.01, 1000);
-            _viewport.camera.projectCentral(_viewport.camera.getAspect(), _viewport.camera.getFieldOfView(), _viewport.camera.getDirection(), 0.01, 1000);
-            // yset up axis to control
-            camera.axisRotateX.addControl(cntMouseVertical);
-            camera.axisRotateX.setFactor(_speedCameraRotation);
-            camera.axisRotateY.addControl(cntMouseHorizontal);
-            camera.axisRotateY.setFactor(_speedCameraRotation);
-            // _viewport.getBranch().addChild(camera);
-            let focus;
-            if (_showFocus) {
-                focus = new FudgeAid.NodeCoordinateSystem("Focus");
-                focus.addComponent(new ƒ.ComponentTransform());
-                _viewport.getBranch().addChild(focus);
-            }
-            redraw();
-            return camera;
-            function hndPointerMove(_event) {
-                if (!_event.buttons)
-                    return;
-                let posCamera = camera.nodeCamera.mtxWorld.translation.copy;
-                cntMouseHorizontal.setInput(_event.movementX);
-                cntMouseVertical.setInput(_event.movementY);
-                ƒ.Render.prepare(camera);
-                if (_event.altKey || _event.buttons == 4) {
-                    let offset = ƒ.Vector3.DIFFERENCE(posCamera, camera.nodeCamera.mtxWorld.translation);
-                    camera.mtxLocal.translate(offset, false);
-                }
-                redraw();
-            }
-            function hndPointerDown(_event) {
-                let pos = new ƒ.Vector2(_event.canvasX, _event.canvasY);
-                let picks = ƒ.Picker.pickViewport(_viewport, pos);
-                if (picks.length == 0)
-                    return;
-                picks.sort((_a, _b) => _a.zBuffer < _b.zBuffer ? -1 : 1);
-                let posCamera = camera.nodeCamera.mtxWorld.translation;
-                camera.mtxLocal.translation = picks[0].posWorld;
-                ƒ.Render.prepare(camera);
-                camera.positionCamera(posCamera);
-                redraw();
-            }
-            function hndWheelMove(_event) {
-                camera.distance *= 1 + (_event.deltaY * _speedCameraDistance);
-                redraw();
-            }
-            function redraw() {
-                if (focus)
-                    focus.mtxLocal.translation = camera.mtxLocal.translation;
-                ƒ.Render.prepare(camera);
-                _viewport.draw();
-            }
-        }
-    }
-    FudgeAid.Viewport = Viewport;
-})(FudgeAid || (FudgeAid = {}));
 var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
@@ -687,6 +13,9 @@ var ChessGame;
         }
         UpdatePosition(currentChessFigure) {
             this._transformComponent.mtxLocal.lookAt(currentChessFigure.mtxLocal.translation, new f.Vector3(0, 1, 0));
+        }
+        Translate(amount) {
+            this._transformComponent.mtxLocal.translateY(amount);
         }
         UpdatePlayer(currentPlayer) {
             let vector3;
@@ -743,7 +72,13 @@ var ChessGame;
                 posY = this._place.mtxLocal.translation.y + 1;
                 componentMesh.mtxPivot.scale(new f.Vector3(0.8, 2, 0.8));
             }
-            let materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user.GetPlayerType() === ChessGame.UserType.PLAYER ? "Black" : "White")));
+            let materialSolidWhite;
+            if (name !== "König") {
+                materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS(user.GetPlayerType() === ChessGame.UserType.PLAYER ? "Black" : "White")));
+            }
+            else {
+                materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS("YELLOW")));
+            }
             let componentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);
             // this.addComponent(new CollisionController())
@@ -884,21 +219,30 @@ var ChessGame;
     var f = FudgeCore;
     class DuellController {
         // private 
-        constructor(surface, cameraController, duell) {
+        constructor(cameraController, duell) {
+            this._endStatus = false;
             const offset = 15;
-            this._surface = surface;
+            // this._surface = surface;
             this._cameraController = cameraController;
             this._duell = duell;
-            this._originPosition = surface.getComponent(f.ComponentTransform);
+            // this._originPosition = surface.getComponent(f.ComponentTransform);
             this._battleGround = new f.Node("CheckmateBattle");
-            for (const component of surface.getAllComponents()) {
-                this._battleGround.addComponent(component);
-            }
-            this._battleGround.getComponent(f.ComponentTransform).mtxLocal.translateY(offset);
-            // const transformSurface: f.ComponentTransform = surface.getComponent(f.ComponentTransform);
-            // transformSurface.mtxLocal.translateY(offset);
-            const transform = cameraController.TransformComponent;
-            transform.mtxLocal.translateY(offset);
+            const mesh = new f.MeshCube("Ground");
+            const mComp = new f.ComponentMesh(mesh);
+            this._battleGround.addComponent(mComp);
+            mComp.mtxPivot.scale(new f.Vector3(15, 1, 15));
+            this._battleGround.addComponent(new f.ComponentTransform());
+            this._battleGround.addComponent(new f.ComponentRigidbody(0, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT));
+            // this._battleGround.getComponent(f.ComponentTransform).mtxLocal.translation.y = offset;
+            // this._battleGround.mtxLocal.translation.z = 15;
+            this._cameraController.Translate(offset);
+            // this._cameraController
+            // this._cameraController.TransformComponent.mtxLocal.translation.z = this._cameraController.TransformComponent.mtxLocal.translation.z + 15;
+            // this._battleGround.mtxLocal.translation.z = offset;
+            const materialSolidWhite = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS("DarkGreen")));
+            const componentMaterial = new f.ComponentMaterial(materialSolidWhite);
+            this._battleGround.addComponent(componentMaterial);
+            this._battleGround.mtxLocal.translateY(offset);
         }
         get BattleGround() {
             return this._battleGround;
@@ -907,6 +251,9 @@ var ChessGame;
             return false;
         }
         HandleInput() {
+            // this.WatchEnd();
+        }
+        WatchEnd() {
         }
     }
     ChessGame.DuellController = DuellController;
@@ -960,6 +307,8 @@ var ChessGame;
     class GameController {
         constructor(chessPlayer, places, cameraController, selctionController, root) {
             this._duellMode = false;
+            this._checkmate = false;
+            this._finished = false;
             const random = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? ChessGame.UserType.PLAYER : ChessGame.UserType.ENEMY;
@@ -969,16 +318,27 @@ var ChessGame;
             this._soundController = new ChessGame.SoundController(ChessGame.SoundType.TIME);
             this._root.addComponent(this._soundController);
             this._cameraController = cameraController;
-            console.log(this._root);
+            this._duellController = null;
+            console.log(this);
         }
         HandleGame() {
-            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
-            this._inputController.UpdateCurrentUser(this._currentUser);
-            this._inputController.HandleInput();
-            // this.WatchMovementController();
-            // this.DeSpawnEnemy();
-            this.HandleFinishMove();
-            this.WatchCheckmate();
+            if (!this._finished) {
+                if (!this._checkmate) {
+                    this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
+                    this._inputController.UpdateCurrentUser(this._currentUser);
+                    this._inputController.HandleInput();
+                    // this.WatchMovementController();
+                    // this.DeSpawnEnemy();   
+                    this.WatchCheckmate();
+                    this.HandleFinishMove();
+                }
+                else {
+                    this._duellController.HandleInput();
+                    this.HandleMovements();
+                    this.WatchCheckmateEnd();
+                }
+            }
+            this.WatchEndGame();
         }
         HandleFinishMove() {
             if (this._inputController.GetSelectionState()) {
@@ -998,10 +358,51 @@ var ChessGame;
                 this._root.addComponent(this._soundController);
             }
         }
+        WatchEndGame() {
+            // Object.keys(this._chessPlayer).map((value:) => {
+            //     const player: ChessPlayer = this._chessPlayer[value];
+            // })
+            let gameEnd;
+            const ps = [];
+            ps.push(this._chessPlayer[ChessGame.UserType.PLAYER]);
+            ps.push(this._chessPlayer[ChessGame.UserType.ENEMY]);
+            for (const player of ps) {
+                let hitKing = false;
+                for (const figure of player.GetFigures()) {
+                    if (figure.name === "König") {
+                        hitKing = true;
+                    }
+                }
+                if (!hitKing) {
+                    this._finished = true;
+                    const end = {
+                        _winner: player.GetPlayerType() === ChessGame.UserType.ENEMY ? ChessGame.UserType.PLAYER : ChessGame.UserType.ENEMY
+                    };
+                    gameEnd = end;
+                    break;
+                }
+            }
+            this._winner = gameEnd;
+        }
         WatchCheckmate() {
             if (this._inputController.Checkmate) {
+                // console.log(111)
+                this._inputController.Checkmate = false;
                 this._duellMode = true;
-                this._duellController = new ChessGame.DuellController;
+                // const surface: f.Node = this._root.getChildrenByName("Surface")[0];
+                // setTimeout(()=>{})
+                if (this._duellController === null) {
+                    this._duellController = new ChessGame.DuellController(this._cameraController, this._inputController.CurrentDuell);
+                    this._root.addChild(this._duellController.BattleGround);
+                    console.log(this._root);
+                }
+            }
+        }
+        WatchCheckmateEnd() {
+            if (this._duellController.End) {
+                this._checkmate = false;
+                this._root.removeChild(this._duellController.BattleGround);
+                this._duellController = null;
             }
         }
         HandleMovements() {
@@ -1147,9 +548,15 @@ var ChessGame;
             this._cameraController.UpdatePlayer(this._currentPlayer);
             this.GetChessFigureMovements();
         }
+        set Checkmate(value) {
+            this._isCheckmate = value;
+        }
         get Checkmate() {
             return this._isCheckmate;
         }
+        // public set Checkmate(value: boolean): void {
+        //     this._isCheckmate = value;
+        // }
         get CurrentDuell() {
             const p = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
             const o = this._isMovement ? this._movements[this._movementIndex].getContainer().getComponent(ChessGame.PlaceController).GetChessFigure() : this._attacks[this._attackIndex].getContainer().getComponent(ChessGame.PlaceController).GetChessFigure();
@@ -1281,13 +688,15 @@ var ChessGame;
             }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
                 this.Move();
-                this.SelectTimerReset();
-                setTimeout((ref) => {
-                    this._selectionFinished = true;
-                    this._currentChessFigureIndex = 0;
-                    this._attackIndex = 0;
-                    ref.getComponent(ChessGame.MovementController).EndMovement();
-                }, 1200, this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]);
+                if (!this._isCheckmate) {
+                    this.SelectTimerReset();
+                    setTimeout((ref) => {
+                        this._selectionFinished = true;
+                        this._currentChessFigureIndex = 0;
+                        this._attackIndex = 0;
+                        ref.getComponent(ChessGame.MovementController).EndMovement();
+                    }, 1200, this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]);
+                }
             }
             this.ShowSelection();
         }

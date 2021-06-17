@@ -26,9 +26,15 @@ namespace ChessGame {
             this._cameraController.UpdatePlayer(this._currentPlayer);
             this.GetChessFigureMovements();
         }
+        public set Checkmate(value: boolean) {
+             this._isCheckmate = value;
+        }
         public get Checkmate(): boolean {
             return this._isCheckmate;
         }
+        // public set Checkmate(value: boolean): void {
+        //     this._isCheckmate = value;
+        // }
         public get CurrentDuell(): Duell {
             const p: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
             const o: ChessFigure = this._isMovement ? this._movements[this._movementIndex].getContainer().getComponent(PlaceController).GetChessFigure() : this._attacks[this._attackIndex].getContainer().getComponent(PlaceController).GetChessFigure();
@@ -157,13 +163,15 @@ namespace ChessGame {
             }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
                 this.Move();
-                this.SelectTimerReset();
-                setTimeout((ref: f.Node) => {
-                    this._selectionFinished = true;
-                    this._currentChessFigureIndex = 0;
-                    this._attackIndex = 0;
-                    ref.getComponent(MovementController).EndMovement();
-                },         1200, this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]);
+                if (!this._isCheckmate) {
+                    this.SelectTimerReset();
+                    setTimeout((ref: f.Node) => {
+                        this._selectionFinished = true;
+                        this._currentChessFigureIndex = 0;
+                        this._attackIndex = 0;
+                        ref.getComponent(MovementController).EndMovement();
+                    },         1200, this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]);
+                }
             }
             this.ShowSelection();
         }
