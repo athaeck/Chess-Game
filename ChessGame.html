@@ -1,26 +1,45 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-<title>ChessGame</title>
-<meta charset="utf-8" />
-<!--Load FUDGE-->
-  <script type="text/javascript" src="./references/FudgePhysics/OimoPhysics.js">  </script>
-  <script type="text/javascript" src="./references/FudgeCore/Build/FudgeCore.js">  </script>
-  <script type="text/javascript" src="./references/FudgeAid/Build/FudgeAid.js">  </script>
-  <script type="text/javascript" src="./references/FudgeUserInterface/FudgeUserInterface.js">  </script>
-  <script type="text/javascript" src="./build/ChessGame.js"></script>
-  <link rel="stylesheet" href="ChessGame.css" />
-  <link type="resources" src="ChessGame.json" />
-
-</head>
-<body>
-  <!-- UI -->
-<div id="ui-wrapper">
-  verbrauchte Zeit <input type="number" key="currentTime" disabled />s
-  Nutzungszeit <meter min="0" max="120" key="time" disabled ></meter>
-  Player am Zug <input type="text" key="player" disabled />
-</div>
-<canvas class="fullscreen"></canvas>
-
-</body>
+  <head>
+    <title>ChessGame</title>
+    <meta charset="utf-8" />
+    <!--Load FUDGE-->
+    <script
+      type="text/javascript"
+      src="./references/FudgePhysics/OimoPhysics.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="./references/FudgeCore/Build/FudgeCore.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="./references/FudgeAid/Build/FudgeAid.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="./references/FudgeUserInterface/FudgeUserInterface.js"
+    ></script>
+    <script type="text/javascript" src="./build/ChessGame.js"></script>
+    <link rel="stylesheet" href="ChessGame.css" />
+    <link type="resources" src="ChessGame.json" />
+  </head>
+  <body>
+    <!-- UI -->
+    <div id="ui-wrapper">
+      Player am Zug <input type="text" key="player" disabled />
+    </div>
+    <canvas class="fullscreen"></canvas>
+    <dialog>
+      <h1>Bitte gebt hier eure Namen ein:</h1>
+      <h2>Name des Players:</h2>
+      <input type="text" id="player-name" name="player-name" />
+      <h2>Name des Enemys</h2>
+      <input type="text" id="enemy-name" name="enemy-name" />
+      <button id="play-button">Spiel starten</button>
+      <div id="container">
+        <p id="error-message"></p>
+      </div>
+    </dialog>
+  </body>
 </html>

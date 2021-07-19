@@ -15,15 +15,17 @@ namespace ChessGame {
         private _attacks: f.ComponentTransform[];
         private _isMovement: boolean = true;
         private _isCheckmate: boolean = false;
+        private _gameController: GameController;
         // private x: number = 0;
-        private _selectionFinished: boolean = false;
-        constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType) {
+        // private _selectionFinished: boolean = false;
+        constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType, gameController: GameController) {
             this._selectionControl = selectionControl;
             this._places = places;
             this._player = player;
             this._cameraController = cameraController;
             this._currentPlayer = user;
             this._cameraController.UpdatePlayer(this._currentPlayer);
+            this._gameController = gameController;
             this.GetChessFigureMovements();
         }
         public set Checkmate(value: boolean) {
@@ -54,7 +56,7 @@ namespace ChessGame {
         public UpdateCurrentUser(user: UserType): void {
             if (user !== this._currentPlayer) {
                 this._cameraController.UpdatePlayer(user);
-                this._selectionFinished = false;
+                // this._selectionFinished = false;
             }
             this._currentPlayer = user;
             this.GetChessFigureMovements();
@@ -62,9 +64,9 @@ namespace ChessGame {
         public GetCurrentUser(): UserType {
             return this._currentPlayer;
         }
-        public GetSelectionState(): boolean {
-            return this._selectionFinished;
-        }
+        // public GetSelectionState(): boolean {
+        //     return this._selectionFinished;
+        // }
 
         public HandleInput(): void {
             this.HandleSelectionControl();
@@ -166,7 +168,8 @@ namespace ChessGame {
                 if (!this._isCheckmate) {
                     this.SelectTimerReset();
                     setTimeout((ref: f.Node) => {
-                        this._selectionFinished = true;
+                        // this._selectionFinished = true;
+                        this._gameController.HandleFinishMove();
                         this._currentChessFigureIndex = 0;
                         this._attackIndex = 0;
                         ref.getComponent(MovementController).EndMovement();
@@ -210,6 +213,7 @@ namespace ChessGame {
                     currentFigure.addComponent(movementController);
                 } else {
                     this._isCheckmate = true;
+                    this._gameController.WatchCheckmate();
                 }
             }
         }
@@ -219,8 +223,7 @@ namespace ChessGame {
             this._player[this._currentPlayer].GetFigures()[index].addComponent(soundController);
         }
         private HandleSelectionControl(): void {
-            // Hud.
-            gameState.player = this._currentPlayer;
+            gameState.player = this._player[this._currentPlayer].name;
             if (this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]) {
                 const _currentFigure: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex] as ChessFigure;
                 const _currentPlace: f.Node = _currentFigure.GetPlace();

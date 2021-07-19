@@ -29,8 +29,10 @@ namespace ChessGame {
     let _selectionControl: SelectionControl;
     let _startUserPlayer: UserType = UserType.PLAYER;
     let _inputSetting: Input;
+    let _playerName: string = "";
+    let _enemyName: string = "";
 
-    window.addEventListener("load", Start);
+    window.addEventListener("load", Init);
     export class GameController {
         private _inputController: InputController;
         private _currentUser: UserType;
@@ -49,12 +51,12 @@ namespace ChessGame {
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? UserType.PLAYER : UserType.ENEMY;
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
-            this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser);
             this._root = root;
             this._soundController = new SoundController(SoundType.TIME);
             this._root.addComponent(this._soundController);
             this._cameraController = cameraController;
             this._duellController = null;
+            this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
         public HandleGame(): void {
@@ -65,18 +67,19 @@ namespace ChessGame {
                     this._inputController.HandleInput();
                     // this.WatchMovementController();
                     // this.DeSpawnEnemy();   
-                    this.WatchCheckmate();
-                    this.HandleFinishMove();
-                } else {
-                    this._duellController.HandleInput();
-                    this.HandleMovements();
-                    this.WatchCheckmateEnd();
+                    // this.WatchCheckmate();
+                    // this.HandleFinishMove();
                 }
+                // else {
+                //     this._duellController.HandleInput();
+                //     this.HandleMovements();
+                //     this.WatchCheckmateEnd();
+                // }
             }
             this.WatchEndGame();
         }
-        private HandleFinishMove(): void {
-            if (this._inputController.GetSelectionState()) {
+        public HandleFinishMove(): void {
+            // if (this._inputController.GetSelectionState()) {
                 this._playerTimeController.StoppTimer();
                 this._soundController.Delete();
                 // this._enemyOnTheWay = false;
@@ -91,10 +94,10 @@ namespace ChessGame {
                 State.Instance.SetUser = this._currentUser;
                 this._playerTimeController.StartTimer();
                 this._root.addComponent(this._soundController);
-            }
+            // }
 
         }
-        private WatchEndGame(): void{
+        public WatchEndGame(): void{
             // Object.keys(this._chessPlayer).map((value:) => {
             //     const player: ChessPlayer = this._chessPlayer[value];
             // })
@@ -121,8 +124,8 @@ namespace ChessGame {
             this._winner = gameEnd;
 
         }
-        private WatchCheckmate(): void {
-            if (this._inputController.Checkmate) {
+        public WatchCheckmate(): void {
+            // if (this._inputController.Checkmate) {
                 // console.log(111)
                 this._inputController.Checkmate = false;
                 this._duellMode = true;
@@ -134,16 +137,16 @@ namespace ChessGame {
                     console.log(this._root);
                 }
                
-            }
+            // }
         }
-        private WatchCheckmateEnd(): void {
+        public WatchCheckmateEnd(): void {
             if (this._duellController.End) {
                 this._checkmate = false;
                 this._root.removeChild(this._duellController.BattleGround);
                 this._duellController = null;
             }
         }
-        private HandleMovements(): void {
+        public HandleMovements(): void {
             // const projectiles: Projectile[] = [];
             // for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
             //     // for(const proj)
@@ -158,7 +161,30 @@ namespace ChessGame {
             // }
         }
     }
-    async function Start(event: Event): Promise<void> {
+    function Init(): void {
+        let dialog: HTMLDialogElement = document.querySelector("dialog");
+        dialog.showModal();
+        const PLAYERINPUT: HTMLInputElement = document.getElementById("player-name") as HTMLInputElement;
+        const ENEMYINPUT: HTMLInputElement = document.getElementById("enemy-name") as HTMLInputElement;
+        const STARTBUTTON: HTMLButtonElement = document.getElementById("play-button") as HTMLButtonElement;
+        const ERROR: HTMLParagraphElement = document.getElementById("error-message") as HTMLParagraphElement;
+        ERROR.style.display = "none";
+        STARTBUTTON.addEventListener("click", () => {
+            _enemyName = ENEMYINPUT.value;
+            _playerName = PLAYERINPUT.value;
+            ERROR.style.display = "none";
+            ERROR.innerHTML = "";
+            if (_playerName.length > 0 && _enemyName.length > 0) {
+                dialog.close();
+                Start();
+            } else {
+                ERROR.style.display = "block";
+                ERROR.innerHTML = "Bitte gib gülte Namen ein!";
+            }
+
+        });
+    }
+    async function Start(): Promise<void> {
         f.Physics.settings.debugMode = f.PHYSICS_DEBUGMODE.COLLIDERS;
         f.Physics.settings.debugDraw = true;
         f.Physics.settings.defaultRestitution = 0.5;
@@ -230,8 +256,8 @@ namespace ChessGame {
         const playerF: f.Node = figures.getChildrenByName("Player")[0];
         const enemyF: f.Node = figures.getChildrenByName("Enemy")[0];
         const places: f.Node = _root.getChildrenByName("Places")[0];
-        const player: ChessPlayer = new ChessPlayer(playerF, UserType.PLAYER, new TimeController());
-        const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, new TimeController());
+        const player: ChessPlayer = new ChessPlayer(playerF, UserType.PLAYER, new TimeController(), _playerName);
+        const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, new TimeController(), _enemyName);
         _places = places.getChildren();
         for (let place of _places) {
             const rigidbody: f.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);

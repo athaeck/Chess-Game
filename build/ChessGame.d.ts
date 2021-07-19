@@ -44,7 +44,9 @@ declare namespace ChessGame {
         private _type;
         private _timeController;
         private _graveYard;
-        constructor(chessFigures: f.Node, type: UserType, timeController: TimeController);
+        private _name;
+        constructor(chessFigures: f.Node, type: UserType, timeController: TimeController, name: string);
+        get name(): string;
         GetFigures(): ChessFigure[];
         GetTimeController(): TimeController;
         GetPlayerType(): UserType;
@@ -137,11 +139,11 @@ declare namespace ChessGame {
         private _winner;
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph);
         HandleGame(): void;
-        private HandleFinishMove;
-        private WatchEndGame;
-        private WatchCheckmate;
-        private WatchCheckmateEnd;
-        private HandleMovements;
+        HandleFinishMove(): void;
+        WatchEndGame(): void;
+        WatchCheckmate(): void;
+        WatchCheckmateEnd(): void;
+        HandleMovements(): void;
     }
 }
 declare namespace ChessGame {
@@ -160,14 +162,13 @@ declare namespace ChessGame {
         private _attacks;
         private _isMovement;
         private _isCheckmate;
-        private _selectionFinished;
-        constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType);
+        private _gameController;
+        constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType, gameController: GameController);
         set Checkmate(value: boolean);
         get Checkmate(): boolean;
         get CurrentDuell(): Duell;
         UpdateCurrentUser(user: UserType): void;
         GetCurrentUser(): UserType;
-        GetSelectionState(): boolean;
         HandleInput(): void;
         private IsCheckmate;
         private Move;

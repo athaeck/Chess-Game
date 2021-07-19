@@ -5,10 +5,15 @@ namespace ChessGame {
         private _type: UserType;
         private _timeController: TimeController;
         private _graveYard: string[] = [];
-        constructor(chessFigures: f.Node, type: UserType, timeController: TimeController) {
+        private _name: string;
+        constructor(chessFigures: f.Node, type: UserType, timeController: TimeController, name: string) {
             this._chessFigures = chessFigures;
             this._type = type;
             this._timeController = timeController;
+            this._name = name;
+        }
+        public get name(): string {
+            return this._name;
         }
         public GetFigures(): ChessFigure[] {
             return this._chessFigures.getChildren() as ChessFigure[];

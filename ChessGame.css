@@ -9,11 +9,37 @@ body {
 
 dialog {
     text-align: center;
+    display: block;
 }
 
 canvas.fullscreen {
     width: 100vw;
     height: 100vh;
+}
+
+#player-name {
+    width: 100%;
+    border: 1px solid black;
+    color: black;
+}
+
+#container {
+    height: 18px;
+}
+
+#play-button {
+    margin: 14px 0;
+}
+
+#enemy-name {
+    width: 100%;
+    border: 1px solid black;
+    color: black;
+}
+
+#error-message {
+    margin-block-start: 0;
+    margin-block-end: 0;
 }
 
 #ui-wrapper {

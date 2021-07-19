@@ -4,7 +4,7 @@ namespace ChessGame {
   class GameState extends f.Mutable {
     // public hits: number = 0;
     public time: number = 120;
-    public player: string = "player";
+    public player: string = "";
     public currentTime: number = 0;
     protected reduceMutator(_mutator: f.Mutator): void {/* */ }
   }

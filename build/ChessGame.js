@@ -3,6 +3,8 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class CameraController extends f.ComponentScript {
+        _transformComponent;
+        _user;
         constructor(userType) {
             super();
             this._user = userType;
@@ -56,10 +58,13 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class ChessFigure extends ChessGame.GameObject {
+        _place;
+        _user;
+        _move;
+        _timerOn = false;
+        _life = 100;
         constructor(name, mass, pysicsType, colliderType, group, place, user) {
             super(name, mass, pysicsType, colliderType, group, new f.MeshSphere);
-            this._timerOn = false;
-            this._life = 100;
             this._place = place;
             this._user = user;
             let posY = 0;
@@ -123,11 +128,19 @@ var ChessGame;
 var ChessGame;
 (function (ChessGame) {
     class ChessPlayer {
-        constructor(chessFigures, type, timeController) {
-            this._graveYard = [];
+        _chessFigures;
+        _type;
+        _timeController;
+        _graveYard = [];
+        _name;
+        constructor(chessFigures, type, timeController, name) {
             this._chessFigures = chessFigures;
             this._type = type;
             this._timeController = timeController;
+            this._name = name;
+        }
+        get name() {
+            return this._name;
         }
         GetFigures() {
             return this._chessFigures.getChildren();
@@ -190,10 +203,11 @@ var ChessGame;
 var ChessGame;
 (function (ChessGame) {
     class DataController {
+        static _instance;
+        _chessFigureSetting = "./data/ChessFigureSetting.json";
+        _chessFigures = "./data/ChessFigures.json";
+        _gameSetting = "./data/GameSetting.json";
         constructor() {
-            this._chessFigureSetting = "./data/ChessFigureSetting.json";
-            this._chessFigures = "./data/ChessFigures.json";
-            this._gameSetting = "./data/GameSetting.json";
         }
         static get Instance() {
             return this._instance || (this._instance = new this());
@@ -218,9 +232,14 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class DuellController {
+        // private _surface: f.Node;
+        _cameraController;
+        _duell;
+        _originPosition;
+        _battleGround;
+        _endStatus = false;
         // private 
         constructor(cameraController, duell) {
-            this._endStatus = false;
             const offset = 15;
             // this._surface = surface;
             this._cameraController = cameraController;
@@ -303,22 +322,33 @@ var ChessGame;
     let _selectionControl;
     let _startUserPlayer = ChessGame.UserType.PLAYER;
     let _inputSetting;
-    window.addEventListener("load", Start);
+    let _playerName = "";
+    let _enemyName = "";
+    window.addEventListener("load", Init);
     class GameController {
+        _inputController;
+        _currentUser;
+        _chessPlayer;
+        _playerTimeController;
+        _root;
+        _soundController;
+        _duellMode = false;
+        _duellController;
+        _cameraController;
+        _checkmate = false;
+        _finished = false;
+        _winner;
         constructor(chessPlayer, places, cameraController, selctionController, root) {
-            this._duellMode = false;
-            this._checkmate = false;
-            this._finished = false;
             const random = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? ChessGame.UserType.PLAYER : ChessGame.UserType.ENEMY;
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
-            this._inputController = new ChessGame.InputController(places, chessPlayer, cameraController, selctionController, this._currentUser);
             this._root = root;
             this._soundController = new ChessGame.SoundController(ChessGame.SoundType.TIME);
             this._root.addComponent(this._soundController);
             this._cameraController = cameraController;
             this._duellController = null;
+            this._inputController = new ChessGame.InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
         HandleGame() {
@@ -329,34 +359,34 @@ var ChessGame;
                     this._inputController.HandleInput();
                     // this.WatchMovementController();
                     // this.DeSpawnEnemy();   
-                    this.WatchCheckmate();
-                    this.HandleFinishMove();
+                    // this.WatchCheckmate();
+                    // this.HandleFinishMove();
                 }
-                else {
-                    this._duellController.HandleInput();
-                    this.HandleMovements();
-                    this.WatchCheckmateEnd();
-                }
+                // else {
+                //     this._duellController.HandleInput();
+                //     this.HandleMovements();
+                //     this.WatchCheckmateEnd();
+                // }
             }
             this.WatchEndGame();
         }
         HandleFinishMove() {
-            if (this._inputController.GetSelectionState()) {
-                this._playerTimeController.StoppTimer();
-                this._soundController.Delete();
-                // this._enemyOnTheWay = false;
-                switch (this._currentUser) {
-                    case ChessGame.UserType.PLAYER:
-                        this._currentUser = ChessGame.UserType.ENEMY;
-                        break;
-                    default:
-                        this._currentUser = ChessGame.UserType.PLAYER;
-                        break;
-                }
-                ChessGame.State.Instance.SetUser = this._currentUser;
-                this._playerTimeController.StartTimer();
-                this._root.addComponent(this._soundController);
+            // if (this._inputController.GetSelectionState()) {
+            this._playerTimeController.StoppTimer();
+            this._soundController.Delete();
+            // this._enemyOnTheWay = false;
+            switch (this._currentUser) {
+                case ChessGame.UserType.PLAYER:
+                    this._currentUser = ChessGame.UserType.ENEMY;
+                    break;
+                default:
+                    this._currentUser = ChessGame.UserType.PLAYER;
+                    break;
             }
+            ChessGame.State.Instance.SetUser = this._currentUser;
+            this._playerTimeController.StartTimer();
+            this._root.addComponent(this._soundController);
+            // }
         }
         WatchEndGame() {
             // Object.keys(this._chessPlayer).map((value:) => {
@@ -385,18 +415,18 @@ var ChessGame;
             this._winner = gameEnd;
         }
         WatchCheckmate() {
-            if (this._inputController.Checkmate) {
-                // console.log(111)
-                this._inputController.Checkmate = false;
-                this._duellMode = true;
-                // const surface: f.Node = this._root.getChildrenByName("Surface")[0];
-                // setTimeout(()=>{})
-                if (this._duellController === null) {
-                    this._duellController = new ChessGame.DuellController(this._cameraController, this._inputController.CurrentDuell);
-                    this._root.addChild(this._duellController.BattleGround);
-                    console.log(this._root);
-                }
+            // if (this._inputController.Checkmate) {
+            // console.log(111)
+            this._inputController.Checkmate = false;
+            this._duellMode = true;
+            // const surface: f.Node = this._root.getChildrenByName("Surface")[0];
+            // setTimeout(()=>{})
+            if (this._duellController === null) {
+                this._duellController = new ChessGame.DuellController(this._cameraController, this._inputController.CurrentDuell);
+                this._root.addChild(this._duellController.BattleGround);
+                console.log(this._root);
             }
+            // }
         }
         WatchCheckmateEnd() {
             if (this._duellController.End) {
@@ -421,7 +451,30 @@ var ChessGame;
         }
     }
     ChessGame.GameController = GameController;
-    async function Start(event) {
+    function Init() {
+        let dialog = document.querySelector("dialog");
+        dialog.showModal();
+        const PLAYERINPUT = document.getElementById("player-name");
+        const ENEMYINPUT = document.getElementById("enemy-name");
+        const STARTBUTTON = document.getElementById("play-button");
+        const ERROR = document.getElementById("error-message");
+        ERROR.style.display = "none";
+        STARTBUTTON.addEventListener("click", () => {
+            _enemyName = ENEMYINPUT.value;
+            _playerName = PLAYERINPUT.value;
+            ERROR.style.display = "none";
+            ERROR.innerHTML = "";
+            if (_playerName.length > 0 && _enemyName.length > 0) {
+                dialog.close();
+                Start();
+            }
+            else {
+                ERROR.style.display = "block";
+                ERROR.innerHTML = "Bitte gib gülte Namen ein!";
+            }
+        });
+    }
+    async function Start() {
         f.Physics.settings.debugMode = f.PHYSICS_DEBUGMODE.COLLIDERS;
         f.Physics.settings.debugDraw = true;
         f.Physics.settings.defaultRestitution = 0.5;
@@ -484,8 +537,8 @@ var ChessGame;
         const playerF = figures.getChildrenByName("Player")[0];
         const enemyF = figures.getChildrenByName("Enemy")[0];
         const places = _root.getChildrenByName("Places")[0];
-        const player = new ChessGame.ChessPlayer(playerF, ChessGame.UserType.PLAYER, new ChessGame.TimeController());
-        const enemy = new ChessGame.ChessPlayer(enemyF, ChessGame.UserType.ENEMY, new ChessGame.TimeController());
+        const player = new ChessGame.ChessPlayer(playerF, ChessGame.UserType.PLAYER, new ChessGame.TimeController(), _playerName);
+        const enemy = new ChessGame.ChessPlayer(enemyF, ChessGame.UserType.ENEMY, new ChessGame.TimeController(), _enemyName);
         _places = places.getChildren();
         for (let place of _places) {
             const rigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);
@@ -531,21 +584,30 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class InputController {
-        constructor(places, player, cameraController, selectionControl, user) {
-            this._currentChessFigureIndex = 0;
-            this._clickable = true;
-            this._movementIndex = 0;
-            this._attackIndex = 0;
-            this._isMovement = true;
-            this._isCheckmate = false;
-            // private x: number = 0;
-            this._selectionFinished = false;
+        _places;
+        _player;
+        _cameraController;
+        _currentPlayer;
+        _currentChessFigureIndex = 0;
+        _clickable = true;
+        _selectionControl;
+        _movementIndex = 0;
+        _attackIndex = 0;
+        _movements;
+        _attacks;
+        _isMovement = true;
+        _isCheckmate = false;
+        _gameController;
+        // private x: number = 0;
+        // private _selectionFinished: boolean = false;
+        constructor(places, player, cameraController, selectionControl, user, gameController) {
             this._selectionControl = selectionControl;
             this._places = places;
             this._player = player;
             this._cameraController = cameraController;
             this._currentPlayer = user;
             this._cameraController.UpdatePlayer(this._currentPlayer);
+            this._gameController = gameController;
             this.GetChessFigureMovements();
         }
         set Checkmate(value) {
@@ -576,7 +638,7 @@ var ChessGame;
         UpdateCurrentUser(user) {
             if (user !== this._currentPlayer) {
                 this._cameraController.UpdatePlayer(user);
-                this._selectionFinished = false;
+                // this._selectionFinished = false;
             }
             this._currentPlayer = user;
             this.GetChessFigureMovements();
@@ -584,9 +646,9 @@ var ChessGame;
         GetCurrentUser() {
             return this._currentPlayer;
         }
-        GetSelectionState() {
-            return this._selectionFinished;
-        }
+        // public GetSelectionState(): boolean {
+        //     return this._selectionFinished;
+        // }
         HandleInput() {
             this.HandleSelectionControl();
             this.HandleCameraPosition();
@@ -691,7 +753,8 @@ var ChessGame;
                 if (!this._isCheckmate) {
                     this.SelectTimerReset();
                     setTimeout((ref) => {
-                        this._selectionFinished = true;
+                        // this._selectionFinished = true;
+                        this._gameController.HandleFinishMove();
                         this._currentChessFigureIndex = 0;
                         this._attackIndex = 0;
                         ref.getComponent(ChessGame.MovementController).EndMovement();
@@ -738,6 +801,7 @@ var ChessGame;
                 }
                 else {
                     this._isCheckmate = true;
+                    this._gameController.WatchCheckmate();
                 }
             }
         }
@@ -747,8 +811,7 @@ var ChessGame;
             this._player[this._currentPlayer].GetFigures()[index].addComponent(soundController);
         }
         HandleSelectionControl() {
-            // Hud.
-            ChessGame.gameState.player = this._currentPlayer;
+            ChessGame.gameState.player = this._player[this._currentPlayer].name;
             if (this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]) {
                 const _currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
                 const _currentPlace = _currentFigure.GetPlace();
@@ -941,9 +1004,16 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class MovementController extends f.ComponentScript {
+        _start;
+        _target;
+        _places;
+        _name;
+        _body;
+        _parent;
+        _enemyOnTheWay = false;
+        _collidingEnemy;
         constructor() {
             super();
-            this._enemyOnTheWay = false;
             this.singleton = true;
             this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.Start.bind(this));
         }
@@ -1042,6 +1112,7 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class PlaceController extends f.ComponentScript {
+        _chessFigure;
         constructor(chessFigure = null) {
             super();
             this._chessFigure = chessFigure;
@@ -1067,9 +1138,10 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class Projectile extends ChessGame.GameObject {
+        _target;
+        _speed = 10;
         constructor(target) {
             super("Projectile", 1, f.PHYSICS_TYPE.DYNAMIC, f.COLLIDER_TYPE.CAPSULE, f.PHYSICS_GROUP.DEFAULT, new f.MeshSphere());
-            this._speed = 10;
             let componentMesh = this.getComponent(f.ComponentMesh);
             componentMesh.mtxPivot.scale(new f.Vector3(0.4, 0.5, 0.4));
             // this.mtxLocal.lookAt(this._target)
@@ -1109,6 +1181,10 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class SoundController extends f.ComponentScript {
+        _type;
+        _setting;
+        _soundSettings;
+        _soundComponent;
         constructor(type) {
             super();
             this._type = type;
@@ -1145,6 +1221,8 @@ var ChessGame;
 var ChessGame;
 (function (ChessGame) {
     class State {
+        static _instance;
+        activeUser;
         constructor() {
         }
         static get Instance() {
@@ -1162,8 +1240,10 @@ var ChessGame;
 var ChessGame;
 (function (ChessGame) {
     class TimeController {
+        _currentUseTime;
+        _remainTime;
+        _count = false;
         constructor() {
-            this._count = false;
             this._currentUseTime = 0;
         }
         StartTimer() {
@@ -1190,17 +1270,15 @@ var ChessGame;
     var fui = FudgeUserInterface;
     var f = FudgeCore;
     class GameState extends f.Mutable {
-        constructor() {
-            super(...arguments);
-            // public hits: number = 0;
-            this.time = 120;
-            this.player = "player";
-            this.currentTime = 0;
-        }
+        // public hits: number = 0;
+        time = 120;
+        player = "";
+        currentTime = 0;
         reduceMutator(_mutator) { }
     }
     ChessGame.gameState = new GameState();
     class Hud {
+        static controller;
         static start() {
             let domHud = document.querySelector("div#ui-wrapper");
             Hud.controller = new fui.Controller(ChessGame.gameState, domHud);
