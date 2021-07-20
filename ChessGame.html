@@ -33,9 +33,9 @@
     <canvas class="fullscreen"></canvas>
     <dialog id="start">
       <h1>Bitte gebt hier eure Namen ein:</h1>
-      <h2>Name des Players:</h2>
+      <h2>Name des Spielers:</h2>
       <input type="text" id="player-name" name="player-name" />
-      <h2>Name des Enemys</h2>
+      <h2>Name des Gegners:</h2>
       <input type="text" id="enemy-name" name="enemy-name" />
       <button id="play-button">Spiel starten</button>
       <div id="container">
@@ -43,9 +43,10 @@
       </div>
     </dialog>
     <dialog id="end">
-      <div>
+      <h2>Schach Matt!</h2>
+      <div style="display: flex">
         <h1 id="victor"></h1>
-        ist Sieger
+        hat gewonnen!
       </div>
       <button id="restart">Erneut spielen</button>
     </dialog>

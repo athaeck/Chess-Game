@@ -669,9 +669,6 @@ var ChessGame;
         GetCurrentUser() {
             return this._currentPlayer;
         }
-        // public GetSelectionState(): boolean {
-        //     return this._selectionFinished;
-        // }
         HandleInput() {
             this.HandleSelectionControl();
             this.HandleCameraPosition();
@@ -979,13 +976,8 @@ var ChessGame;
                 }
             }
             if (currentMove) {
-                // if (!this.IsCheckmate()) {
                 movementController.Init(currentMove, this._places, currentFigure.name);
                 currentFigure.addComponent(movementController);
-                // } else {
-                // this._isCheckmate = true;
-                // this._gameController.WatchCheckmate();
-                // }
             }
         }
         HandleSoundController(soundType) {

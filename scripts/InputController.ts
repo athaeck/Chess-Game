@@ -80,9 +80,6 @@ namespace ChessGame {
         public GetCurrentUser(): UserType {
             return this._currentPlayer;
         }
-        // public GetSelectionState(): boolean {
-        //     return this._selectionFinished;
-        // }
 
         public HandleInput(): void {
             this.HandleSelectionControl();
@@ -466,13 +463,8 @@ namespace ChessGame {
                 }
             }
             if (currentMove) {
-                // if (!this.IsCheckmate()) {
                 movementController.Init(currentMove, this._places, currentFigure.name);
                 currentFigure.addComponent(movementController);
-                // } else {
-                // this._isCheckmate = true;
-                // this._gameController.WatchCheckmate();
-                // }
             }
         }
         private HandleSoundController(soundType: SoundType): void {
