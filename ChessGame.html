@@ -27,10 +27,11 @@
   <body>
     <!-- UI -->
     <div id="ui-wrapper">
-      Player am Zug <input type="text" key="player" disabled />
+      <input type="text" key="player" disabled /> ist am Zug
+      <input type="text" key="checkmate" disabled />
     </div>
     <canvas class="fullscreen"></canvas>
-    <dialog>
+    <dialog id="start">
       <h1>Bitte gebt hier eure Namen ein:</h1>
       <h2>Name des Players:</h2>
       <input type="text" id="player-name" name="player-name" />
@@ -40,6 +41,13 @@
       <div id="container">
         <p id="error-message"></p>
       </div>
+    </dialog>
+    <dialog id="end">
+      <div>
+        <h1 id="victor"></h1>
+        ist Sieger
+      </div>
+      <button id="restart">Erneut spielen</button>
     </dialog>
   </body>
 </html>

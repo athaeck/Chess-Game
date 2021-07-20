@@ -15,7 +15,7 @@ namespace ChessGame {
         public UpdatePosition(currentChessFigure: f.ComponentTransform): void {
             this._transformComponent.mtxLocal.lookAt(currentChessFigure.mtxLocal.translation, new f.Vector3(0, 1, 0));
         }
-        public Translate(amount: number): void{
+        public Translate(amount: number): void {
             this._transformComponent.mtxLocal.translateY(amount);
         }
         public UpdatePlayer(currentPlayer: UserType): void {

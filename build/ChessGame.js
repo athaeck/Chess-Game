@@ -169,6 +169,7 @@ var ChessGame;
 (function (ChessGame) {
     var f = FudgeCore;
     class CollisionController extends f.ComponentScript {
+        _hit = false;
         // private _parent: ChessFigure;
         // private _target: f.Vector3;
         constructor() {
@@ -184,6 +185,12 @@ var ChessGame;
             this.getContainer().getComponent(f.ComponentRigidbody).addEventListener("ColliderEnteredCollision" /* COLLISION_ENTER */, this.HandleCollision.bind(this));
         }
         HandleCollision(event) {
+            // this._hit = true;
+            // if (!this._hit) {
+            // console.log(event);
+            // const rgb: f.ComponentRigidbody = event.target.container.getComponent(f.ComponentRigidbody);
+            // rgb.applyLinearImpulse(new f.Vector3(0, 100, 0));
+            // }
             // console.log(State.Instance.User)
             // const parent: ChessFigure = event.cmpRigidbody.container as ChessFigure;
             // // console.log(parent)
@@ -272,8 +279,6 @@ var ChessGame;
         HandleInput() {
             // this.WatchEnd();
         }
-        WatchEnd() {
-        }
     }
     ChessGame.DuellController = DuellController;
 })(ChessGame || (ChessGame = {}));
@@ -351,24 +356,30 @@ var ChessGame;
             this._inputController = new ChessGame.InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
+        get finished() {
+            return this._finished;
+        }
+        get winner() {
+            return this._winner;
+        }
         HandleGame() {
-            if (!this._finished) {
-                if (!this._checkmate) {
-                    this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
-                    this._inputController.UpdateCurrentUser(this._currentUser);
-                    this._inputController.HandleInput();
-                    // this.WatchMovementController();
-                    // this.DeSpawnEnemy();   
-                    // this.WatchCheckmate();
-                    // this.HandleFinishMove();
-                }
-                // else {
-                //     this._duellController.HandleInput();
-                //     this.HandleMovements();
-                //     this.WatchCheckmateEnd();
-                // }
-            }
-            this.WatchEndGame();
+            // if (!this._finished) {
+            // if (!this._checkmate) {
+            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
+            this._inputController.UpdateCurrentUser(this._currentUser);
+            this._inputController.HandleInput();
+            // this.WatchMovementController();
+            // this.DeSpawnEnemy();   
+            this.WatchCheckmate();
+            // this.HandleFinishMove();
+            // }
+            // else {
+            //     this._duellController.HandleInput();
+            //     this.HandleMovements();
+            //     this.WatchCheckmateEnd();
+            // }
+            // }
+            // this.WatchEndGame();
         }
         HandleFinishMove() {
             // if (this._inputController.GetSelectionState()) {
@@ -389,9 +400,6 @@ var ChessGame;
             // }
         }
         WatchEndGame() {
-            // Object.keys(this._chessPlayer).map((value:) => {
-            //     const player: ChessPlayer = this._chessPlayer[value];
-            // })
             let gameEnd;
             const ps = [];
             ps.push(this._chessPlayer[ChessGame.UserType.PLAYER]);
@@ -406,7 +414,7 @@ var ChessGame;
                 if (!hitKing) {
                     this._finished = true;
                     const end = {
-                        _winner: player.GetPlayerType() === ChessGame.UserType.ENEMY ? ChessGame.UserType.PLAYER : ChessGame.UserType.ENEMY
+                        _winner: player.GetPlayerType() === ChessGame.UserType.ENEMY ? this._chessPlayer[ChessGame.UserType.PLAYER].name : this._chessPlayer[ChessGame.UserType.ENEMY].name
                     };
                     gameEnd = end;
                     break;
@@ -415,44 +423,48 @@ var ChessGame;
             this._winner = gameEnd;
         }
         WatchCheckmate() {
-            // if (this._inputController.Checkmate) {
-            // console.log(111)
-            this._inputController.Checkmate = false;
-            this._duellMode = true;
-            // const surface: f.Node = this._root.getChildrenByName("Surface")[0];
-            // setTimeout(()=>{})
-            if (this._duellController === null) {
-                this._duellController = new ChessGame.DuellController(this._cameraController, this._inputController.CurrentDuell);
-                this._root.addChild(this._duellController.BattleGround);
-                console.log(this._root);
+            const ps = [];
+            let checkmate = false;
+            const moves = [];
+            ps.push(this._chessPlayer[ChessGame.UserType.PLAYER]);
+            ps.push(this._chessPlayer[ChessGame.UserType.ENEMY]);
+            for (const player of ps) {
+                let index = 0;
+                for (const figure of player.GetFigures()) {
+                    const am = this._inputController.GetChessFigureMovements(player.GetPlayerType(), index, true);
+                    for (const m of am._movements) {
+                        moves.push(m);
+                    }
+                    if (figure.name === "Bauer") {
+                        const bm = this._inputController.GetChessFigureMovements(player.GetPlayerType(), index, false);
+                        for (const b of bm._attacks) {
+                            moves.push(b);
+                        }
+                    }
+                    index++;
+                }
+                if (moves.length > 0) {
+                    for (const m of moves) {
+                        const plzController = m.getContainer().getComponent(ChessGame.PlaceController);
+                        if (!plzController.IsChessFigureNull()) {
+                            if (plzController.GetChessFigure().name === "König" && plzController.GetChessFigure().GetUser().GetPlayerType() !== player.GetPlayerType()) {
+                                checkmate = true;
+                            }
+                        }
+                    }
+                }
             }
-            // }
-        }
-        WatchCheckmateEnd() {
-            if (this._duellController.End) {
-                this._checkmate = false;
-                this._root.removeChild(this._duellController.BattleGround);
-                this._duellController = null;
+            if (checkmate) {
+                ChessGame.gameState.checkmate = "Schach";
             }
-        }
-        HandleMovements() {
-            // const projectiles: Projectile[] = [];
-            // for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
-            //     // for(const proj)
-            //     if (figure.getChildren().length > 0) {
-            //         for (const prj of figure.getChildren() as Projectile[]) {
-            //             projectiles.push(prj);
-            //         }
-            //     }
-            // }
-            // for (const projectile of projectiles) {
-            //     projectile.Move();
-            // }
+            else {
+                ChessGame.gameState.checkmate = "";
+            }
         }
     }
     ChessGame.GameController = GameController;
     function Init() {
-        let dialog = document.querySelector("dialog");
+        let dialog = document.getElementById("start");
         dialog.showModal();
         const PLAYERINPUT = document.getElementById("player-name");
         const ENEMYINPUT = document.getElementById("enemy-name");
@@ -500,7 +512,7 @@ var ChessGame;
         }
         console.log(_root);
         f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, HandleGame);
-        f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
+        f.Loop.start(f.LOOP_MODE.TIME_GAME, 60);
     }
     function InitCamera() {
         _cameraController = new ChessGame.CameraController(_startUserPlayer);
@@ -525,13 +537,13 @@ var ChessGame;
         player._avatar.addComponent(new f.ComponentTransform(f.Matrix4x4.TRANSLATION(new f.Vector3(0, 0, 0))));
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
-        ƒ.AudioManager.default.listenTo(_root);
+        f.AudioManager.default.listenTo(_root);
         _player = player;
         _root.appendChild(_player._avatar);
     }
     function InitWorld() {
         const surface = _root.getChildrenByName("Surface")[0];
-        surface.addComponent(new ƒ.ComponentRigidbody(0, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT));
+        surface.addComponent(new f.ComponentRigidbody(0, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT));
         _surface = surface;
         const figures = _root.getChildrenByName("Figures")[0];
         const playerF = figures.getChildrenByName("Player")[0];
@@ -541,7 +553,7 @@ var ChessGame;
         const enemy = new ChessGame.ChessPlayer(enemyF, ChessGame.UserType.ENEMY, new ChessGame.TimeController(), _enemyName);
         _places = places.getChildren();
         for (let place of _places) {
-            const rigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);
+            const rigidbody = new f.ComponentRigidbody(1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT);
             rigidbody.mtxPivot.scaleZ(0.1);
             place.addComponent(rigidbody);
             place.addComponent(new ChessGame.PlaceController());
@@ -576,8 +588,18 @@ var ChessGame;
     }
     function HandleGame(event) {
         _gameController.HandleGame();
-        f.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
+        f.Physics.world.simulate(f.Loop.timeFrameReal / 1000);
         _viewport.draw();
+        _gameController.WatchEndGame();
+        if (_gameController.finished) {
+            const endScreen = document.getElementById("end");
+            endScreen.showModal();
+            document.getElementById("victor").innerHTML = _gameController.winner._winner;
+            f.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, HandleGame);
+            document.getElementById("restart").addEventListener("click", () => {
+                window.location.reload();
+            });
+        }
     }
 })(ChessGame || (ChessGame = {}));
 var ChessGame;
@@ -593,8 +615,9 @@ var ChessGame;
         _selectionControl;
         _movementIndex = 0;
         _attackIndex = 0;
-        _movements;
-        _attacks;
+        // private _movements: f.ComponentTransform[];
+        // private _attacks: f.ComponentTransform[];
+        _selection;
         _isMovement = true;
         _isCheckmate = false;
         _gameController;
@@ -608,7 +631,7 @@ var ChessGame;
             this._currentPlayer = user;
             this._cameraController.UpdatePlayer(this._currentPlayer);
             this._gameController = gameController;
-            this.GetChessFigureMovements();
+            this._selection = this.GetChessFigureMovements(this._currentPlayer, this._currentChessFigureIndex, this._isMovement);
         }
         set Checkmate(value) {
             this._isCheckmate = value;
@@ -619,29 +642,29 @@ var ChessGame;
         // public set Checkmate(value: boolean): void {
         //     this._isCheckmate = value;
         // }
-        get CurrentDuell() {
-            const p = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
-            const o = this._isMovement ? this._movements[this._movementIndex].getContainer().getComponent(ChessGame.PlaceController).GetChessFigure() : this._attacks[this._attackIndex].getContainer().getComponent(ChessGame.PlaceController).GetChessFigure();
-            switch (this._currentPlayer) {
-                case ChessGame.UserType.ENEMY:
-                    return {
-                        enemy: p,
-                        player: o
-                    };
-                default:
-                    return {
-                        player: p,
-                        enemy: o
-                    };
-            }
-        }
+        // public get CurrentDuell(): Duell {
+        //     const p: ChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
+        //     const o: ChessFigure = this._isMovement ? this._movements[this._movementIndex].getContainer().getComponent(PlaceController).GetChessFigure() : this._attacks[this._attackIndex].getContainer().getComponent(PlaceController).GetChessFigure();
+        //     switch (this._currentPlayer) {
+        //         case UserType.ENEMY:
+        //             return {
+        //                 enemy: p,
+        //                 player: o
+        //             };
+        //         default:
+        //             return {
+        //                 player: p,
+        //                 enemy: o
+        //             };
+        //     }
+        // }
         UpdateCurrentUser(user) {
             if (user !== this._currentPlayer) {
                 this._cameraController.UpdatePlayer(user);
                 // this._selectionFinished = false;
             }
             this._currentPlayer = user;
-            this.GetChessFigureMovements();
+            this._selection = this.GetChessFigureMovements(this._currentPlayer, this._currentChessFigureIndex, this._isMovement);
         }
         GetCurrentUser() {
             return this._currentPlayer;
@@ -667,12 +690,12 @@ var ChessGame;
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.W])) {
                     if (this._isMovement) {
-                        if (this._movements.length > 0) {
+                        if (this._selection._movements.length > 0) {
                             this._movementIndex++;
                         }
                     }
                     else {
-                        if (this._attacks.length > 0) {
+                        if (this._selection._attacks.length > 0) {
                             this._attackIndex++;
                         }
                     }
@@ -682,12 +705,12 @@ var ChessGame;
                 }
                 if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.S])) {
                     if (this._isMovement) {
-                        if (this._movements.length > 0) {
+                        if (this._selection._movements.length > 0) {
                             this._movementIndex--;
                         }
                     }
                     else {
-                        if (this._attacks.length > 0) {
+                        if (this._selection._attacks.length > 0) {
                             this._attackIndex--;
                         }
                     }
@@ -697,26 +720,29 @@ var ChessGame;
                 }
             }
             else {
-                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_RIGHT])) {
+                if (this._clickable &&
+                    f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_RIGHT])) {
                     this._currentChessFigureIndex++;
                     this.CheckIfValidIndex();
                     this.HandleSoundController(ChessGame.SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
-                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_LEFT])) {
+                if (this._clickable &&
+                    f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_LEFT])) {
                     this._currentChessFigureIndex--;
                     this.CheckIfValidIndex();
                     this.HandleSoundController(ChessGame.SoundType.SELECT_FIGURE);
                     this.PressTimerReset();
                 }
-                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_UP])) {
+                if (this._clickable &&
+                    f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_UP])) {
                     if (this._isMovement) {
-                        if (this._movements.length > 0) {
+                        if (this._selection._movements.length > 0) {
                             this._movementIndex++;
                         }
                     }
                     else {
-                        if (this._attacks.length > 0) {
+                        if (this._selection._attacks.length > 0) {
                             this._attackIndex++;
                         }
                     }
@@ -724,14 +750,15 @@ var ChessGame;
                     this.HandleSoundController(ChessGame.SoundType.SELECT_FIELD);
                     this.SelectTimerReset();
                 }
-                if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_DOWN])) {
+                if (this._clickable &&
+                    f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ARROW_DOWN])) {
                     if (this._isMovement) {
-                        if (this._movements.length > 0) {
+                        if (this._selection._movements.length > 0) {
                             this._movementIndex--;
                         }
                     }
                     else {
-                        if (this._attacks.length > 0) {
+                        if (this._selection._attacks.length > 0) {
                             this._attackIndex--;
                         }
                     }
@@ -763,110 +790,11 @@ var ChessGame;
             }
             this.ShowSelection();
         }
-        IsCheckmate() {
-            let target;
-            if (this._isMovement) {
-                target = this._movements[this._movementIndex];
-            }
-            else {
-                target = this._attacks[this._attackIndex];
-            }
-            let targetName;
-            if (target !== undefined) {
-                const placeC = target.getContainer().getComponent(ChessGame.PlaceController);
-                if (!placeC.IsChessFigureNull()) {
-                    targetName = placeC.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer ? placeC.GetChessFigure().name : undefined;
-                }
-            }
-            return targetName !== undefined && targetName === "König" ? true : false;
-        }
-        Move() {
-            const movementController = new ChessGame.MovementController();
-            const currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
-            let currentMove;
-            if (this._isMovement) {
-                if (this._movements.length > 0) {
-                    currentMove = this._movements[this._movementIndex];
-                }
-            }
-            else {
-                if (this._attacks.length > 0) {
-                    currentMove = this._attacks[this._attackIndex];
-                }
-            }
-            if (currentMove) {
-                if (!this.IsCheckmate()) {
-                    movementController.Init(currentMove, this._places, currentFigure.name);
-                    currentFigure.addComponent(movementController);
-                }
-                else {
-                    this._isCheckmate = true;
-                    this._gameController.WatchCheckmate();
-                }
-            }
-        }
-        HandleSoundController(soundType) {
-            const index = this._currentChessFigureIndex;
-            const soundController = new ChessGame.SoundController(soundType);
-            this._player[this._currentPlayer].GetFigures()[index].addComponent(soundController);
-        }
-        HandleSelectionControl() {
-            ChessGame.gameState.player = this._player[this._currentPlayer].name;
-            if (this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]) {
-                const _currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
-                const _currentPlace = _currentFigure.GetPlace();
-                const v3 = new f.Vector3(_currentPlace.mtxLocal.translation.x, 3, _currentPlace.mtxLocal.translation.z);
-                this._selectionControl.mtxLocal.translation = v3;
-            }
-        }
-        CheckIfValidIndex() {
-            if (this._currentChessFigureIndex > this._player[this._currentPlayer].GetFigures().length - 1) {
-                this._currentChessFigureIndex = 0;
-            }
-            if (this._currentChessFigureIndex < 0) {
-                this._currentChessFigureIndex = this._player[this._currentPlayer].GetFigures().length - 1;
-            }
-            if (this._movementIndex > this._movements.length - 1) {
-                this._movementIndex = 0;
-            }
-            if (this._movementIndex < 0) {
-                this._movementIndex = this._movements.length - 1;
-            }
-            if (this._attackIndex > this._attacks.length - 1) {
-                this._attackIndex = 0;
-            }
-            if (this._attackIndex < 0) {
-                this._attackIndex = this._attacks.length - 1;
-            }
-        }
-        HandleCameraPosition() {
-            const _currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
-            const _transform = _currentFigure.getComponent(f.ComponentTransform);
-            this._cameraController.UpdatePosition(_transform);
-        }
-        ShowSelection() {
-            if (this._isMovement) {
-                if (this._movementIndex < this._movements.length) {
-                    const currentMovementPosition = this._movements[this._movementIndex].getContainer();
-                    const transform = currentMovementPosition.getComponent(f.ComponentTransform);
-                    this._cameraController.UpdatePosition(transform);
-                    currentMovementPosition.addChild(new ChessGame.MovementSelection());
-                }
-            }
-            else {
-                if (this._attackIndex < this._attacks.length) {
-                    const currentAttackPosition = this._attacks[this._attackIndex].getContainer();
-                    const transform = currentAttackPosition.getComponent(f.ComponentTransform);
-                    this._cameraController.UpdatePosition(transform);
-                    currentAttackPosition.addChild(new ChessGame.MovementSelection());
-                }
-            }
-        }
-        GetChessFigureMovements() {
+        GetChessFigureMovements(currentPlayer, chessFigureIndex, isMovement = this._isMovement) {
             const POSSIBLEMOVEMENTS = [];
             const POSSIBLEATTACKS = [];
             let direction = 1;
-            switch (this._currentPlayer) {
+            switch (currentPlayer) {
                 case ChessGame.UserType.PLAYER:
                     direction = 1;
                     break;
@@ -874,12 +802,14 @@ var ChessGame;
                     direction = -1;
                     break;
             }
-            const currentChessFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
+            const currentChessFigure = this._player[currentPlayer].GetFigures()[chessFigureIndex];
             const chessPlayerSetting = currentChessFigure.GetChessFigureMovement();
-            const currentPlaceTransform = currentChessFigure.GetPlace().getComponent(f.ComponentTransform);
+            const currentPlaceTransform = currentChessFigure
+                .GetPlace()
+                .getComponent(f.ComponentTransform);
             const currentPlace = currentPlaceTransform.mtxLocal.translation;
             if (chessPlayerSetting != undefined) {
-                if (this._isMovement) {
+                if (isMovement) {
                     for (const movement of chessPlayerSetting._movement) {
                         if (!movement._scalable) {
                             if (movement._initScale) {
@@ -887,13 +817,19 @@ var ChessGame;
                                     const targetPosition = new f.Vector3(ChessGame.Round(direction * i * movement._fieldsX + currentPlace.x, 10), 0, ChessGame.Round(direction * i * movement._fieldsZ + currentPlace.z, 10));
                                     for (const place of this._places) {
                                         const placeTrans = place.getComponent(f.ComponentTransform);
-                                        if (ChessGame.Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && ChessGame.Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                        if (ChessGame.Round(placeTrans.mtxLocal.translation.x, 10) ===
+                                            targetPosition.x &&
+                                            ChessGame.Round(placeTrans.mtxLocal.translation.z, 10) ===
+                                                targetPosition.z) {
                                             const placeController = place.getComponent(ChessGame.PlaceController);
                                             if (placeController.IsChessFigureNull()) {
                                                 POSSIBLEMOVEMENTS.push(placeTrans);
                                             }
                                             if (!placeController.IsChessFigureNull()) {
-                                                if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
+                                                if (placeController
+                                                    .GetChessFigure()
+                                                    .GetUser()
+                                                    .GetPlayerType() !== currentPlayer) {
                                                     POSSIBLEMOVEMENTS.push(placeTrans);
                                                 }
                                             }
@@ -905,10 +841,17 @@ var ChessGame;
                                 const targetPosition = new f.Vector3(ChessGame.Round(direction * movement._fieldsX + currentPlace.x, 10), 0, ChessGame.Round(direction * movement._fieldsZ + currentPlace.z, 10));
                                 for (const place of this._places) {
                                     const placeTrans = place.getComponent(f.ComponentTransform);
-                                    if (ChessGame.Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && ChessGame.Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                    if (ChessGame.Round(placeTrans.mtxLocal.translation.x, 10) ===
+                                        targetPosition.x &&
+                                        ChessGame.Round(placeTrans.mtxLocal.translation.z, 10) ===
+                                            targetPosition.z) {
                                         const placeController = place.getComponent(ChessGame.PlaceController);
-                                        if (!placeController.IsChessFigureNull() && currentChessFigure.name !== "Bauer") {
-                                            if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
+                                        if (!placeController.IsChessFigureNull() &&
+                                            currentChessFigure.name !== "Bauer") {
+                                            if (placeController
+                                                .GetChessFigure()
+                                                .GetUser()
+                                                .GetPlayerType() !== currentPlayer) {
                                                 POSSIBLEMOVEMENTS.push(placeTrans);
                                             }
                                         }
@@ -927,7 +870,10 @@ var ChessGame;
                                 let hit = false;
                                 for (const place of this._places) {
                                     const placeTransform = place.getComponent(f.ComponentTransform);
-                                    if (ChessGame.Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && ChessGame.Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                    if (ChessGame.Round(placeTransform.mtxLocal.translation.x, 10) ===
+                                        targetPosition.x &&
+                                        ChessGame.Round(placeTransform.mtxLocal.translation.z, 10) ===
+                                            targetPosition.z) {
                                         hit = true;
                                     }
                                 }
@@ -937,10 +883,16 @@ var ChessGame;
                                 else {
                                     for (const place of this._places) {
                                         const placeTransform = place.getComponent(f.ComponentTransform);
-                                        if (ChessGame.Round(placeTransform.mtxLocal.translation.x, 10) === targetPosition.x && ChessGame.Round(placeTransform.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                        if (ChessGame.Round(placeTransform.mtxLocal.translation.x, 10) ===
+                                            targetPosition.x &&
+                                            ChessGame.Round(placeTransform.mtxLocal.translation.z, 10) ===
+                                                targetPosition.z) {
                                             const placeController = place.getComponent(ChessGame.PlaceController);
                                             if (!placeController.IsChessFigureNull()) {
-                                                if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
+                                                if (placeController
+                                                    .GetChessFigure()
+                                                    .GetUser()
+                                                    .GetPlayerType() !== currentPlayer) {
                                                     POSSIBLEMOVEMENTS.push(placeTransform);
                                                 }
                                                 lastFieldReached = true;
@@ -965,10 +917,16 @@ var ChessGame;
                             const targetPosition = new f.Vector3(ChessGame.Round(direction * attack._fieldsX + currentPlace.x, 10), 0, ChessGame.Round(direction * attack._fieldsZ + currentPlace.z, 10));
                             for (const place of this._places) {
                                 const placeTrans = place.getComponent(f.ComponentTransform);
-                                if (ChessGame.Round(placeTrans.mtxLocal.translation.x, 10) === targetPosition.x && ChessGame.Round(placeTrans.mtxLocal.translation.z, 10) === targetPosition.z) {
+                                if (ChessGame.Round(placeTrans.mtxLocal.translation.x, 10) ===
+                                    targetPosition.x &&
+                                    ChessGame.Round(placeTrans.mtxLocal.translation.z, 10) ===
+                                        targetPosition.z) {
                                     const placeController = place.getComponent(ChessGame.PlaceController);
                                     if (!placeController.IsChessFigureNull()) {
-                                        if (placeController.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer) {
+                                        if (placeController
+                                            .GetChessFigure()
+                                            .GetUser()
+                                            .GetPlayerType() !== currentPlayer) {
                                             POSSIBLEATTACKS.push(placeTrans);
                                         }
                                     }
@@ -982,19 +940,123 @@ var ChessGame;
                     }
                 }
             }
-            this._movements = POSSIBLEMOVEMENTS;
-            this._attacks = POSSIBLEATTACKS;
+            // this._movements = POSSIBLEMOVEMENTS;
+            // this._attacks = POSSIBLEATTACKS;
             // this.x++;
+            return {
+                _movements: POSSIBLEMOVEMENTS,
+                _attacks: POSSIBLEATTACKS
+            };
+        }
+        // private IsCheckmate(): boolean {
+        // let target: f.ComponentTransform;
+        // if (this._isMovement) {
+        //     target = this._movements[this._movementIndex];
+        // } else {
+        //     target = this._attacks[this._attackIndex];
+        // }
+        // let targetName: string;
+        // if (target !== undefined) {
+        //     const placeC: PlaceController = target.getContainer().getComponent(PlaceController);
+        //     if (!placeC.IsChessFigureNull()) {
+        //         targetName = placeC.GetChessFigure().GetUser().GetPlayerType() !== this._currentPlayer ? placeC.GetChessFigure().name : undefined;
+        //     }
+        // }
+        // return targetName !== undefined && targetName === "König" ? true : false;
+        // }
+        Move() {
+            const movementController = new ChessGame.MovementController();
+            const currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
+            let currentMove;
+            if (this._isMovement) {
+                if (this._selection._movements.length > 0) {
+                    currentMove = this._selection._movements[this._movementIndex];
+                }
+            }
+            else {
+                if (this._selection._attacks.length > 0) {
+                    currentMove = this._selection._attacks[this._attackIndex];
+                }
+            }
+            if (currentMove) {
+                // if (!this.IsCheckmate()) {
+                movementController.Init(currentMove, this._places, currentFigure.name);
+                currentFigure.addComponent(movementController);
+                // } else {
+                // this._isCheckmate = true;
+                // this._gameController.WatchCheckmate();
+                // }
+            }
+        }
+        HandleSoundController(soundType) {
+            const index = this._currentChessFigureIndex;
+            const soundController = new ChessGame.SoundController(soundType);
+            this._player[this._currentPlayer]
+                .GetFigures()[index].addComponent(soundController);
+        }
+        HandleSelectionControl() {
+            ChessGame.gameState.player = this._player[this._currentPlayer].name;
+            if (this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex]) {
+                const _currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
+                const _currentPlace = _currentFigure.GetPlace();
+                const v3 = new f.Vector3(_currentPlace.mtxLocal.translation.x, 3, _currentPlace.mtxLocal.translation.z);
+                this._selectionControl.mtxLocal.translation = v3;
+            }
+        }
+        CheckIfValidIndex() {
+            if (this._currentChessFigureIndex >
+                this._player[this._currentPlayer].GetFigures().length - 1) {
+                this._currentChessFigureIndex = 0;
+            }
+            if (this._currentChessFigureIndex < 0) {
+                this._currentChessFigureIndex =
+                    this._player[this._currentPlayer].GetFigures().length - 1;
+            }
+            if (this._movementIndex > this._selection._movements.length - 1) {
+                this._movementIndex = 0;
+            }
+            if (this._movementIndex < 0) {
+                this._movementIndex = this._selection._movements.length - 1;
+            }
+            if (this._attackIndex > this._selection._attacks.length - 1) {
+                this._attackIndex = 0;
+            }
+            if (this._attackIndex < 0) {
+                this._attackIndex = this._selection._attacks.length - 1;
+            }
+        }
+        HandleCameraPosition() {
+            const _currentFigure = this._player[this._currentPlayer].GetFigures()[this._currentChessFigureIndex];
+            const _transform = _currentFigure.getComponent(f.ComponentTransform);
+            this._cameraController.UpdatePosition(_transform);
+        }
+        ShowSelection() {
+            if (this._isMovement) {
+                if (this._movementIndex < this._selection._movements.length) {
+                    const currentMovementPosition = this._selection._movements[this._movementIndex].getContainer();
+                    const transform = currentMovementPosition.getComponent(f.ComponentTransform);
+                    this._cameraController.UpdatePosition(transform);
+                    currentMovementPosition.addChild(new ChessGame.MovementSelection());
+                }
+            }
+            else {
+                if (this._attackIndex < this._selection._attacks.length) {
+                    const currentAttackPosition = this._selection._attacks[this._attackIndex].getContainer();
+                    const transform = currentAttackPosition.getComponent(f.ComponentTransform);
+                    this._cameraController.UpdatePosition(transform);
+                    currentAttackPosition.addChild(new ChessGame.MovementSelection());
+                }
+            }
         }
         PressTimerReset() {
-            this.GetChessFigureMovements();
+            this._selection = this.GetChessFigureMovements(this._currentPlayer, this._currentChessFigureIndex, this._isMovement);
             this._movementIndex = 0;
             this._clickable = false;
-            f.Time.game.setTimer(500, 1, () => this._clickable = true);
+            f.Time.game.setTimer(500, 1, () => (this._clickable = true));
         }
         SelectTimerReset() {
             this._clickable = false;
-            f.Time.game.setTimer(500, 1, () => this._clickable = true);
+            f.Time.game.setTimer(500, 1, () => (this._clickable = true));
             // this.GetChessFigureMovements();
         }
     }
@@ -1046,8 +1108,9 @@ var ChessGame;
             this.HandleMove();
         }
         HandleMove() {
+            this._parent.addComponent(new ChessGame.SoundController(ChessGame.SoundType.MOVE));
             this._body.physicsType = f.PHYSICS_TYPE.DYNAMIC;
-            this._body.mass = 5;
+            this._body.mass = 50;
             this._body.restitution = 0;
             const toTranslate = new f.Vector3(this._target.mtxLocal.translation.x - this._start.mtxLocal.translation.x, 0, this._target.mtxLocal.translation.z - this._start.mtxLocal.translation.z);
             switch (this._name) {
@@ -1076,6 +1139,7 @@ var ChessGame;
                             // chessFigure.getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
                             // chessFigure.getComponent(f.ComponentRigidbody).friction = 0;
                             // this._collidingEnemy = chessFigure;
+                            this._parent.addComponent(new ChessGame.SoundController(ChessGame.SoundType.HIT));
                             chessFigure.GetUser().RemoveFigure(chessFigure);
                         }
                     }
@@ -1274,6 +1338,7 @@ var ChessGame;
         time = 120;
         player = "";
         currentTime = 0;
+        checkmate = "";
         reduceMutator(_mutator) { }
     }
     ChessGame.gameState = new GameState();

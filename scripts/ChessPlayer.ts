@@ -35,5 +35,6 @@ namespace ChessGame {
         public AddFigure(figure: ChessFigure): void {
             this._chessFigures.appendChild(figure);
         }
+        // public HandleTime
     }
 }

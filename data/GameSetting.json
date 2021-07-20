@@ -11,22 +11,22 @@
         },
         "SELECT_FIGURE": {
             "name": "SelectChess",
-            "volume": 5,
+            "volume": 2,
             "loop": false
         },
         "MOVE": {
             "name": "ChessMove-v3",
-            "volume": 5,
+            "volume": 2,
             "loop": false
         },
         "HIT": {
             "name": "ChessHit-v1",
-            "volume": 5,
+            "volume": 2,
             "loop": false
         },
         "SELECT_FIELD": {
             "name": "SelectField",
-            "volume": 5,
+            "volume": 2,
             "loop": false
         },
         "TIME": {

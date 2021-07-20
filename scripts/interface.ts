@@ -33,7 +33,7 @@ namespace ChessGame {
     };
     export type Setting = {
         [key in SettingType]: any
-    }
+    };
     export interface SoundSetting {
         withSound: boolean;
     }
@@ -43,4 +43,8 @@ namespace ChessGame {
     export type Duell = {
         [key in UserType]: ChessFigure;
     };
+    export interface AvailableMovment {
+        _movements: f.ComponentTransform[];
+        _attacks: f.ComponentTransform[];
+    }
 }

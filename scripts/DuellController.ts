@@ -43,8 +43,8 @@ namespace ChessGame {
         public HandleInput(): void {
             // this.WatchEnd();
         }
-        public WatchEnd(): void {
+        // public WatchEnd(): void {
 
-        }
+        // }
     }
 }

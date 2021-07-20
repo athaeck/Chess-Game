@@ -6,6 +6,7 @@ namespace ChessGame {
     public time: number = 120;
     public player: string = "";
     public currentTime: number = 0;
+    public checkmate: string = "";
     protected reduceMutator(_mutator: f.Mutator): void {/* */ }
   }
 

@@ -13,8 +13,8 @@ namespace ChessGame {
     const CHESSFIGURES: string[] = [
         "Turm", "Springer", "Läufer", "Dame", "König", "Läufer", "Springer", "Turm", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer", "Bauer"
     ];
-    export interface GameEnd{
-        _winner: UserType;
+    export interface GameEnd {
+        _winner: string;
     }
     let _root: f.Graph;
     let _player: Player;
@@ -59,48 +59,51 @@ namespace ChessGame {
             this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
+        public get finished(): boolean {
+            return this._finished;
+        }
+        public get winner(): GameEnd {
+            return this._winner;
+        }
         public HandleGame(): void {
-            if (!this._finished) {
-                if (!this._checkmate) {
-                    this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
-                    this._inputController.UpdateCurrentUser(this._currentUser);
-                    this._inputController.HandleInput();
-                    // this.WatchMovementController();
-                    // this.DeSpawnEnemy();   
-                    // this.WatchCheckmate();
-                    // this.HandleFinishMove();
-                }
-                // else {
-                //     this._duellController.HandleInput();
-                //     this.HandleMovements();
-                //     this.WatchCheckmateEnd();
-                // }
-            }
-            this.WatchEndGame();
+            // if (!this._finished) {
+            // if (!this._checkmate) {
+            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
+            this._inputController.UpdateCurrentUser(this._currentUser);
+            this._inputController.HandleInput();
+            // this.WatchMovementController();
+            // this.DeSpawnEnemy();   
+            this.WatchCheckmate();
+            // this.HandleFinishMove();
+            // }
+            // else {
+            //     this._duellController.HandleInput();
+            //     this.HandleMovements();
+            //     this.WatchCheckmateEnd();
+            // }
+            // }
+            // this.WatchEndGame();
         }
         public HandleFinishMove(): void {
             // if (this._inputController.GetSelectionState()) {
-                this._playerTimeController.StoppTimer();
-                this._soundController.Delete();
-                // this._enemyOnTheWay = false;
-                switch (this._currentUser) {
-                    case UserType.PLAYER:
-                        this._currentUser = UserType.ENEMY;
-                        break;
-                    default:
-                        this._currentUser = UserType.PLAYER;
-                        break;
-                }
-                State.Instance.SetUser = this._currentUser;
-                this._playerTimeController.StartTimer();
-                this._root.addComponent(this._soundController);
+            this._playerTimeController.StoppTimer();
+            this._soundController.Delete();
+            // this._enemyOnTheWay = false;
+            switch (this._currentUser) {
+                case UserType.PLAYER:
+                    this._currentUser = UserType.ENEMY;
+                    break;
+                default:
+                    this._currentUser = UserType.PLAYER;
+                    break;
+            }
+            State.Instance.SetUser = this._currentUser;
+            this._playerTimeController.StartTimer();
+            this._root.addComponent(this._soundController);
             // }
 
         }
-        public WatchEndGame(): void{
-            // Object.keys(this._chessPlayer).map((value:) => {
-            //     const player: ChessPlayer = this._chessPlayer[value];
-            // })
+        public WatchEndGame(): void {
             let gameEnd: GameEnd;
             const ps: ChessPlayer[] = [];
             ps.push(this._chessPlayer[UserType.PLAYER]);
@@ -115,54 +118,99 @@ namespace ChessGame {
                 if (!hitKing) {
                     this._finished = true;
                     const end: GameEnd = {
-                        _winner: player.GetPlayerType() === UserType.ENEMY ? UserType.PLAYER : UserType.ENEMY
+                        _winner: player.GetPlayerType() === UserType.ENEMY ? this._chessPlayer[UserType.PLAYER].name : this._chessPlayer[UserType.ENEMY].name
                     };
                     gameEnd = end;
                     break;
                 }
             }
             this._winner = gameEnd;
-
         }
         public WatchCheckmate(): void {
-            // if (this._inputController.Checkmate) {
-                // console.log(111)
-                this._inputController.Checkmate = false;
-                this._duellMode = true;
-                // const surface: f.Node = this._root.getChildrenByName("Surface")[0];
-                // setTimeout(()=>{})
-                if (this._duellController === null) {
-                    this._duellController = new DuellController(this._cameraController, this._inputController.CurrentDuell);
-                    this._root.addChild(this._duellController.BattleGround);
-                    console.log(this._root);
+            const ps: ChessPlayer[] = [];
+            let checkmate: boolean = false;
+            const moves: f.ComponentTransform[] = [];
+            ps.push(this._chessPlayer[UserType.PLAYER]);
+            ps.push(this._chessPlayer[UserType.ENEMY]);
+            for (const player of ps) {
+                let index: number = 0;
+                for (const figure of player.GetFigures()) {
+                    const am: AvailableMovment = this._inputController.GetChessFigureMovements(player.GetPlayerType(), index, true);
+                    for (const m of am._movements) {
+                        moves.push(m);
+                    }
+                    if (figure.name === "Bauer") {
+                        const bm: AvailableMovment = this._inputController.GetChessFigureMovements(player.GetPlayerType(), index, false);
+                        for (const b of bm._attacks) {
+                            moves.push(b);
+                        }
+
+                    }
+                    index++;
                 }
-               
-            // }
-        }
-        public WatchCheckmateEnd(): void {
-            if (this._duellController.End) {
-                this._checkmate = false;
-                this._root.removeChild(this._duellController.BattleGround);
-                this._duellController = null;
+                if (moves.length > 0) {
+                    for (const m of moves) {
+                        const plzController: PlaceController = m.getContainer().getComponent(PlaceController);
+                        if (!plzController.IsChessFigureNull()) {
+                            if (plzController.GetChessFigure().name === "König" && plzController.GetChessFigure().GetUser().GetPlayerType() !== player.GetPlayerType()) {
+                                checkmate = true;
+                            }
+                        }
+                    }
+                }
+            }
+            if (checkmate) {
+                gameState.checkmate = "Schach";
+            } else {
+                gameState.checkmate = "";
             }
         }
-        public HandleMovements(): void {
-            // const projectiles: Projectile[] = [];
-            // for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
-            //     // for(const proj)
-            //     if (figure.getChildren().length > 0) {
-            //         for (const prj of figure.getChildren() as Projectile[]) {
-            //             projectiles.push(prj);
-            //         }
-            //     }
-            // }
-            // for (const projectile of projectiles) {
-            //     projectile.Move();
-            // }
-        }
+        // for (const type in UserType) {
+        //     for(this._chessPlayer[UserType[type]])
+        //     // console.log(type)
+        //     // if (!(String(type))) {
+
+        //     // }
+
+        // }
+        // const 
+        //     // if (this._inputController.Checkmate) {
+        //         // console.log(111)
+        //         this._inputController.Checkmate = false;
+        //         this._duellMode = true;
+        //         // const surface: f.Node = this._root.getChildrenByName("Surface")[0];
+        //         // setTimeout(()=>{})
+        //         if (this._duellController === null) {
+        //             this._duellController = new DuellController(this._cameraController, this._inputController.CurrentDuell);
+        //             this._root.addChild(this._duellController.BattleGround);
+        //             console.log(this._root);
+        //         }
+
+        //     // }
+        // public WatchCheckmateEnd(): void {
+        //     if (this._duellController.End) {
+        //         this._checkmate = false;
+        //         this._root.removeChild(this._duellController.BattleGround);
+        //         this._duellController = null;
+        //     }
+        // }
+        // public HandleMovements(): void {
+        //     // const projectiles: Projectile[] = [];
+        //     // for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
+        //     //     // for(const proj)
+        //     //     if (figure.getChildren().length > 0) {
+        //     //         for (const prj of figure.getChildren() as Projectile[]) {
+        //     //             projectiles.push(prj);
+        //     //         }
+        //     //     }
+        //     // }
+        //     // for (const projectile of projectiles) {
+        //     //     projectile.Move();
+        //     // }
+        // }
     }
     function Init(): void {
-        let dialog: HTMLDialogElement = document.querySelector("dialog");
+        let dialog: HTMLDialogElement = document.getElementById("start") as HTMLDialogElement;
         dialog.showModal();
         const PLAYERINPUT: HTMLInputElement = document.getElementById("player-name") as HTMLInputElement;
         const ENEMYINPUT: HTMLInputElement = document.getElementById("enemy-name") as HTMLInputElement;
@@ -217,7 +265,7 @@ namespace ChessGame {
         }
         console.log(_root);
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
-        f.Loop.start(ƒ.LOOP_MODE.TIME_GAME, 60);
+        f.Loop.start(f.LOOP_MODE.TIME_GAME, 60);
     }
     function InitCamera(): void {
         _cameraController = new CameraController(_startUserPlayer);
@@ -244,13 +292,13 @@ namespace ChessGame {
         player._avatar.addComponent(new f.ComponentAudioListener());
         player._avatar.appendChild(_camera._node);
 
-        ƒ.AudioManager.default.listenTo(_root);
+        f.AudioManager.default.listenTo(_root);
         _player = player;
         _root.appendChild(_player._avatar);
     }
     function InitWorld(): void {
         const surface: f.Node = _root.getChildrenByName("Surface")[0];
-        surface.addComponent(new ƒ.ComponentRigidbody(0, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT));
+        surface.addComponent(new f.ComponentRigidbody(0, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT));
         _surface = surface;
         const figures: f.Node = _root.getChildrenByName("Figures")[0];
         const playerF: f.Node = figures.getChildrenByName("Player")[0];
@@ -260,7 +308,7 @@ namespace ChessGame {
         const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, new TimeController(), _enemyName);
         _places = places.getChildren();
         for (let place of _places) {
-            const rigidbody: f.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.PHYSICS_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.PHYSICS_GROUP.DEFAULT);
+            const rigidbody: f.ComponentRigidbody = new f.ComponentRigidbody(1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT);
             rigidbody.mtxPivot.scaleZ(0.1);
             place.addComponent(rigidbody);
             place.addComponent(new PlaceController());
@@ -299,8 +347,18 @@ namespace ChessGame {
     }
     function HandleGame(event: Event): void {
         _gameController.HandleGame();
-        f.Physics.world.simulate(ƒ.Loop.timeFrameReal / 1000);
+        f.Physics.world.simulate(f.Loop.timeFrameReal / 1000);
         _viewport.draw();
+        _gameController.WatchEndGame();
+        if (_gameController.finished) {
+            const endScreen: HTMLDialogElement = document.getElementById("end") as HTMLDialogElement;
+            endScreen.showModal();
+            document.getElementById("victor").innerHTML = _gameController.winner._winner;
+            f.Loop.removeEventListener(f.EVENT.LOOP_FRAME, HandleGame);
+            document.getElementById("restart").addEventListener("click", () => {
+                window.location.reload();
+            });
+        }
     }
 
 }

@@ -57,6 +57,7 @@ declare namespace ChessGame {
 declare namespace ChessGame {
     import f = FudgeCore;
     class CollisionController extends f.ComponentScript {
+        private _hit;
         constructor();
         Remove(): void;
         private Created;
@@ -88,7 +89,6 @@ declare namespace ChessGame {
         get BattleGround(): f.Node;
         get End(): boolean;
         HandleInput(): void;
-        WatchEnd(): void;
     }
 }
 declare namespace ChessGame {
@@ -122,7 +122,7 @@ declare namespace ChessGame {
         _componentCamera: f.ComponentCamera;
     }
     interface GameEnd {
-        _winner: UserType;
+        _winner: string;
     }
     class GameController {
         private _inputController;
@@ -138,12 +138,12 @@ declare namespace ChessGame {
         private _finished;
         private _winner;
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph);
+        get finished(): boolean;
+        get winner(): GameEnd;
         HandleGame(): void;
         HandleFinishMove(): void;
         WatchEndGame(): void;
         WatchCheckmate(): void;
-        WatchCheckmateEnd(): void;
-        HandleMovements(): void;
     }
 }
 declare namespace ChessGame {
@@ -158,26 +158,23 @@ declare namespace ChessGame {
         private _selectionControl;
         private _movementIndex;
         private _attackIndex;
-        private _movements;
-        private _attacks;
+        private _selection;
         private _isMovement;
         private _isCheckmate;
         private _gameController;
         constructor(places: f.Node[], player: ChessPlayers, cameraController: CameraController, selectionControl: SelectionControl, user: UserType, gameController: GameController);
         set Checkmate(value: boolean);
         get Checkmate(): boolean;
-        get CurrentDuell(): Duell;
         UpdateCurrentUser(user: UserType): void;
         GetCurrentUser(): UserType;
         HandleInput(): void;
-        private IsCheckmate;
+        GetChessFigureMovements(currentPlayer: UserType, chessFigureIndex: number, isMovement?: boolean): AvailableMovment;
         private Move;
         private HandleSoundController;
         private HandleSelectionControl;
         private CheckIfValidIndex;
         private HandleCameraPosition;
         private ShowSelection;
-        private GetChessFigureMovements;
         private PressTimerReset;
         private SelectTimerReset;
     }
@@ -276,6 +273,7 @@ declare namespace ChessGame {
         time: number;
         player: string;
         currentTime: number;
+        checkmate: string;
         protected reduceMutator(_mutator: f.Mutator): void;
     }
     export let gameState: GameState;
@@ -289,6 +287,7 @@ declare namespace ChessGame {
     function Round(number: number, place: number): number;
 }
 declare namespace ChessGame {
+    import f = FudgeCore;
     interface Movement {
         _fieldsX: number;
         _fieldsZ: number;
@@ -329,4 +328,8 @@ declare namespace ChessGame {
     type Duell = {
         [key in UserType]: ChessFigure;
     };
+    interface AvailableMovment {
+        _movements: f.ComponentTransform[];
+        _attacks: f.ComponentTransform[];
+    }
 }

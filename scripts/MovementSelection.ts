@@ -10,7 +10,7 @@ namespace ChessGame {
             let materialSolidWhite: f.Material = new f.Material("Color", f.ShaderUniColor, new f.CoatColored(f.Color.CSS("YELLOW")));
             let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);
-            this.addEventListener(f.EVENT.CHILD_APPEND, this.HandleRemove.bind(this))
+            this.addEventListener(f.EVENT.CHILD_APPEND, this.HandleRemove.bind(this));
         }
         private HandleRemove(event: Event): void {
             setTimeout(() => {

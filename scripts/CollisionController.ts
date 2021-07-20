@@ -1,6 +1,7 @@
 namespace ChessGame {
     import f = FudgeCore;
     export class CollisionController extends f.ComponentScript {
+        private _hit: boolean = false;
         // private _parent: ChessFigure;
         // private _target: f.Vector3;
         constructor() {
@@ -18,6 +19,13 @@ namespace ChessGame {
         }
 
         private HandleCollision(event: any): void {
+            // this._hit = true;
+            // if (!this._hit) {
+                // console.log(event);
+                // const rgb: f.ComponentRigidbody = event.target.container.getComponent(f.ComponentRigidbody);
+                // rgb.applyLinearImpulse(new f.Vector3(0, 100, 0));
+            // }
+            
             // console.log(State.Instance.User)
             // const parent: ChessFigure = event.cmpRigidbody.container as ChessFigure;
             // // console.log(parent)

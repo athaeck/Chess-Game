@@ -17,7 +17,7 @@ namespace ChessGame {
         public get EnemyOnTheWay(): boolean {
             return this._enemyOnTheWay;
         }
-        public get CollidingEnemy(): ChessFigure{
+        public get CollidingEnemy(): ChessFigure {
             return this._collidingEnemy;
         }
         public Init(target: f.ComponentTransform, places: f.Node[], name: string): void {
@@ -25,7 +25,7 @@ namespace ChessGame {
             this._target = target;
             this._places = places;
         }
-        public EndMovement(): void{
+        public EndMovement(): void {
             this._enemyOnTheWay = false;
             this._collidingEnemy = null;
             this._body.physicsType = f.PHYSICS_TYPE.KINEMATIC;
@@ -43,8 +43,9 @@ namespace ChessGame {
             this.HandleMove();
         }
         private HandleMove(): void {
+            this._parent.addComponent(new SoundController(SoundType.MOVE));
             this._body.physicsType = f.PHYSICS_TYPE.DYNAMIC;
-            this._body.mass = 5;
+            this._body.mass = 50;
             this._body.restitution = 0;
             const toTranslate: f.Vector3 = new f.Vector3(this._target.mtxLocal.translation.x - this._start.mtxLocal.translation.x, 0, this._target.mtxLocal.translation.z - this._start.mtxLocal.translation.z);
             switch (this._name) {
@@ -69,10 +70,12 @@ namespace ChessGame {
                     const chessFigure: ChessFigure = placeController.GetChessFigure();
                     if (chessFigure) {
                         if (this._parent.GetUser().GetPlayerType() !== chessFigure.GetUser().GetPlayerType()) {
+
                             // this._enemyOnTheWay = true;
                             // chessFigure.getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
                             // chessFigure.getComponent(f.ComponentRigidbody).friction = 0;
                             // this._collidingEnemy = chessFigure;
+                            this._parent.addComponent(new SoundController(SoundType.HIT));
                             chessFigure.GetUser().RemoveFigure(chessFigure);
                         }
                     }
