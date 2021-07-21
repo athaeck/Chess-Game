@@ -6,7 +6,6 @@ namespace ChessGame {
         private _user: ChessPlayer;
         private _move: ChessPlayerSetting;
         private _timerOn: boolean = false;
-        private _life: number = 100;
         constructor(name: string, mass: number, pysicsType: f.PHYSICS_TYPE, colliderType: f.COLLIDER_TYPE, group: f.PHYSICS_GROUP, place: f.Node, user: ChessPlayer) {
             super(name, mass, pysicsType, colliderType, group, new f.MeshSphere);
             this._place = place;

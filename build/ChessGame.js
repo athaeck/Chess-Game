@@ -62,7 +62,6 @@ var ChessGame;
         _user;
         _move;
         _timerOn = false;
-        _life = 100;
         constructor(name, mass, pysicsType, colliderType, group, place, user) {
             super(name, mass, pysicsType, colliderType, group, new f.MeshSphere);
             this._place = place;
@@ -129,23 +128,22 @@ var ChessGame;
     class ChessPlayer {
         _chessFigures;
         _type;
-        _timeController;
         _graveYard = [];
         _name;
-        constructor(chessFigures, type, timeController, name) {
+        constructor(chessFigures, type, name) {
             this._chessFigures = chessFigures;
             this._type = type;
-            this._timeController = timeController;
             this._name = name;
+            console.log(name);
         }
         get name() {
             return this._name;
         }
+        get graveYard() {
+            return this._graveYard;
+        }
         GetFigures() {
             return this._chessFigures.getChildren();
-        }
-        GetTimeController() {
-            return this._timeController;
         }
         GetPlayerType() {
             return this._type;
@@ -271,7 +269,6 @@ var ChessGame;
         _inputController;
         _currentUser;
         _chessPlayer;
-        _playerTimeController;
         _root;
         _soundController;
         _duellMode = false;
@@ -283,8 +280,6 @@ var ChessGame;
             const random = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? ChessGame.UserType.PLAYER : ChessGame.UserType.ENEMY;
-            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
-            this._playerTimeController.StartTimer();
             this._root = root;
             this._soundController = new ChessGame.SoundController(ChessGame.SoundType.TIME);
             this._root.addComponent(this._soundController);
@@ -299,17 +294,14 @@ var ChessGame;
             return this._winner;
         }
         HandleGame() {
-            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController.UpdateCurrentUser(this._currentUser);
             this._inputController.HandleInput();
-            this._playerTimeController.Count();
             this.WatchCheckmate();
         }
         ShowGraveyard() {
             this._chessPlayer[this._currentUser].WriteGravayardFigures(graveyard);
         }
         HandleFinishMove() {
-            this._playerTimeController.StoppTimer();
             this._soundController.Delete();
             switch (this._currentUser) {
                 case ChessGame.UserType.PLAYER:
@@ -320,7 +312,6 @@ var ChessGame;
                     break;
             }
             ChessGame.State.Instance.SetUser = this._currentUser;
-            this._playerTimeController.StartTimer();
             this._root.addComponent(this._soundController);
             this.ShowGraveyard();
         }
@@ -401,6 +392,7 @@ var ChessGame;
         STARTBUTTON.addEventListener("click", () => {
             _enemyName = ENEMYINPUT.value;
             _playerName = PLAYERINPUT.value;
+            console.log(_enemyName, _playerName);
             ERROR.style.display = "none";
             ERROR.innerHTML = "";
             if (_playerName.length > 0 && _enemyName.length > 0) {
@@ -483,8 +475,8 @@ var ChessGame;
         const playerF = figures.getChildrenByName("Player")[0];
         const enemyF = figures.getChildrenByName("Enemy")[0];
         const places = _root.getChildrenByName("Places")[0];
-        const player = new ChessGame.ChessPlayer(playerF, ChessGame.UserType.PLAYER, new ChessGame.TimeController(), _playerName);
-        const enemy = new ChessGame.ChessPlayer(enemyF, ChessGame.UserType.ENEMY, new ChessGame.TimeController(), _enemyName);
+        const player = new ChessGame.ChessPlayer(playerF, ChessGame.UserType.PLAYER, _playerName);
+        const enemy = new ChessGame.ChessPlayer(enemyF, ChessGame.UserType.ENEMY, _enemyName);
         _places = places.getChildren();
         for (let place of _places) {
             const rigidbody = new f.ComponentRigidbody(1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT);
@@ -1144,37 +1136,6 @@ var ChessGame;
         }
     }
     ChessGame.State = State;
-})(ChessGame || (ChessGame = {}));
-var ChessGame;
-(function (ChessGame) {
-    class TimeController {
-        _currentUseTime;
-        _remainTime;
-        _count = false;
-        constructor() {
-            this._currentUseTime = 0;
-            // FetchMaxTime();
-        }
-        StartTimer() {
-            this._count = true;
-            console.log("hit");
-        }
-        StoppTimer() {
-            this._count = false;
-            this._remainTime = this._remainTime - this._currentUseTime;
-            this._currentUseTime = 0;
-        }
-        Count() {
-            if (this._count) {
-                this._currentUseTime++;
-            }
-            console.log(this._currentUseTime);
-        }
-        IsEnoughRemianTime() {
-            return this._remainTime > 0 ? true : false;
-        }
-    }
-    ChessGame.TimeController = TimeController;
 })(ChessGame || (ChessGame = {}));
 var ChessGame;
 (function (ChessGame) {

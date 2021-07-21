@@ -24,7 +24,6 @@ declare namespace ChessGame {
         private _user;
         private _move;
         private _timerOn;
-        private _life;
         constructor(name: string, mass: number, pysicsType: f.PHYSICS_TYPE, colliderType: f.COLLIDER_TYPE, group: f.PHYSICS_GROUP, place: f.Node, user: ChessPlayer);
         SetPlace(place: f.Node): void;
         GetPlace(): f.Node;
@@ -42,13 +41,12 @@ declare namespace ChessGame {
     class ChessPlayer {
         private _chessFigures;
         private _type;
-        private _timeController;
         private _graveYard;
         private _name;
-        constructor(chessFigures: f.Node, type: UserType, timeController: TimeController, name: string);
+        constructor(chessFigures: f.Node, type: UserType, name: string);
         get name(): string;
+        get graveYard(): string[];
         GetFigures(): ChessFigure[];
-        GetTimeController(): TimeController;
         GetPlayerType(): UserType;
         RemoveFigure(figure: f.Node): void;
         AddFigure(figure: ChessFigure): void;
@@ -111,7 +109,6 @@ declare namespace ChessGame {
         private _inputController;
         private _currentUser;
         private _chessPlayer;
-        private _playerTimeController;
         private _root;
         private _soundController;
         private _duellMode;
@@ -222,18 +219,6 @@ declare namespace ChessGame {
         static get Instance(): State;
         set SetUser(user: UserType);
         get User(): UserType;
-    }
-}
-declare namespace ChessGame {
-    class TimeController {
-        private _currentUseTime;
-        private _remainTime;
-        private _count;
-        constructor();
-        StartTimer(): void;
-        StoppTimer(): void;
-        Count(): void;
-        IsEnoughRemianTime(): boolean;
     }
 }
 declare namespace ChessGame {

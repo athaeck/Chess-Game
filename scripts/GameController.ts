@@ -40,7 +40,6 @@ namespace ChessGame {
         private _inputController: InputController;
         private _currentUser: UserType;
         private _chessPlayer: ChessPlayers;
-        private _playerTimeController: TimeController;
         private _root: f.Graph;
         private _soundController: SoundController;
         private _duellMode: boolean = false;
@@ -52,8 +51,6 @@ namespace ChessGame {
             const random: number = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? UserType.PLAYER : UserType.ENEMY;
-            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
-            this._playerTimeController.StartTimer();
             this._root = root;
             this._soundController = new SoundController(SoundType.TIME);
             this._root.addComponent(this._soundController);
@@ -68,17 +65,14 @@ namespace ChessGame {
             return this._winner;
         }
         public HandleGame(): void {
-            this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController.UpdateCurrentUser(this._currentUser);
             this._inputController.HandleInput();
-            this._playerTimeController.Count();
             this.WatchCheckmate();
         }
         public ShowGraveyard(): void {
             this._chessPlayer[this._currentUser].WriteGravayardFigures(graveyard);
         }
         public HandleFinishMove(): void {
-            this._playerTimeController.StoppTimer();
             this._soundController.Delete();
             switch (this._currentUser) {
                 case UserType.PLAYER:
@@ -89,7 +83,6 @@ namespace ChessGame {
                     break;
             }
             State.Instance.SetUser = this._currentUser;
-            this._playerTimeController.StartTimer();
             this._root.addComponent(this._soundController);
             this.ShowGraveyard();
 
@@ -170,6 +163,7 @@ namespace ChessGame {
         STARTBUTTON.addEventListener("click", () => {
             _enemyName = ENEMYINPUT.value;
             _playerName = PLAYERINPUT.value;
+            console.log(_enemyName, _playerName);
             ERROR.style.display = "none";
             ERROR.innerHTML = "";
             if (_playerName.length > 0 && _enemyName.length > 0) {
@@ -262,8 +256,8 @@ namespace ChessGame {
         const playerF: f.Node = figures.getChildrenByName("Player")[0];
         const enemyF: f.Node = figures.getChildrenByName("Enemy")[0];
         const places: f.Node = _root.getChildrenByName("Places")[0];
-        const player: ChessPlayer = new ChessPlayer(playerF, UserType.PLAYER, new TimeController(), _playerName);
-        const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, new TimeController(), _enemyName);
+        const player: ChessPlayer = new ChessPlayer(playerF, UserType.PLAYER, _playerName);
+        const enemy: ChessPlayer = new ChessPlayer(enemyF, UserType.ENEMY, _enemyName);
         _places = places.getChildren();
         for (let place of _places) {
             const rigidbody: f.ComponentRigidbody = new f.ComponentRigidbody(1, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT);
