@@ -19,6 +19,7 @@ button {
 dialog {
     text-align: center;
     display: block;
+    z-index: 100;
 }
 
 canvas.fullscreen {
@@ -52,12 +53,15 @@ canvas.fullscreen {
 }
 
 #ui-wrapper {
-    /* position:absolute; */
     position: absolute;
     width: 100vw;
     height: 100px;
     top: 1px;
     color: white;
+    display: flex;
+    font-size: 50px;
+    font-weight: lighter;
+    align-self: center;
 }
 
 input {
@@ -66,4 +70,47 @@ input {
     color: white;
     width: 50px;
     text-align: center;
+}
+
+#volume-icon {
+    font-size: 100px;
+    position: absolute;
+    right: 100px;
+    /* display: none; */
+}
+
+#player-turn {
+    font-size: 50px;
+    width: 200px;
+}
+
+#off {
+    color: red;
+}
+
+#on {
+    color: green
+}
+
+#graveyard {
+    font-size: 25px;
+    width: 300px;
+    position: absolute;
+    right: 0;
+    top: 90px;
+    background-color: rgb(0, 0, 0);
+    /* Fallback color */
+    background-color: rgba(1, 1, 1, 0.5);
+    padding: 0 7px;
+}
+
+#graveyard h2 {
+    margin-block-start: 0!important;
+    margin-block-end: 0!important;
+}
+
+ul {
+    list-style: none;
+    /* Black w/opacity/see-through */
+    color: white;
 }

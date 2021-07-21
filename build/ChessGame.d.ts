@@ -52,16 +52,7 @@ declare namespace ChessGame {
         GetPlayerType(): UserType;
         RemoveFigure(figure: f.Node): void;
         AddFigure(figure: ChessFigure): void;
-    }
-}
-declare namespace ChessGame {
-    import f = FudgeCore;
-    class CollisionController extends f.ComponentScript {
-        private _hit;
-        constructor();
-        Remove(): void;
-        private Created;
-        private HandleCollision;
+        WriteGravayardFigures(container: HTMLUListElement): void;
     }
 }
 declare namespace ChessGame {
@@ -70,25 +61,17 @@ declare namespace ChessGame {
         private _chessFigureSetting;
         private _chessFigures;
         private _gameSetting;
+        private _setting;
+        private _soundSetting;
         private constructor();
         static get Instance(): DataController;
+        get soundSetting(): SoundSetting;
+        get setting(): Setting;
+        SetSoundSetting(): void;
         GetMovementData(name: string): Promise<ChessPlayerSetting>;
         GetSound(type: SoundType): Promise<SoundData>;
         GetGameSetting(): Promise<Setting>;
-    }
-}
-declare namespace ChessGame {
-    import f = FudgeCore;
-    class DuellController {
-        private _cameraController;
-        private _duell;
-        private _originPosition;
-        private _battleGround;
-        private _endStatus;
-        constructor(cameraController: CameraController, duell: Duell);
-        get BattleGround(): f.Node;
-        get End(): boolean;
-        HandleInput(): void;
+        private fetch;
     }
 }
 declare namespace ChessGame {
@@ -132,7 +115,6 @@ declare namespace ChessGame {
         private _root;
         private _soundController;
         private _duellMode;
-        private _duellController;
         private _cameraController;
         private _checkmate;
         private _finished;
@@ -141,6 +123,7 @@ declare namespace ChessGame {
         get finished(): boolean;
         get winner(): GameEnd;
         HandleGame(): void;
+        ShowGraveyard(): void;
         HandleFinishMove(): void;
         WatchEndGame(): void;
         WatchCheckmate(): void;
@@ -188,11 +171,7 @@ declare namespace ChessGame {
         private _name;
         private _body;
         private _parent;
-        private _enemyOnTheWay;
-        private _collidingEnemy;
         constructor();
-        get EnemyOnTheWay(): boolean;
-        get CollidingEnemy(): ChessFigure;
         Init(target: f.ComponentTransform, places: f.Node[], name: string): void;
         EndMovement(): void;
         private Start;
@@ -215,16 +194,6 @@ declare namespace ChessGame {
         SetChessFigure(chessFigure?: ChessFigure): void;
         IsChessFigureNull(): boolean;
         RemoveChessFigure(): void;
-    }
-}
-declare namespace ChessGame {
-    import f = FudgeCore;
-    class Projectile extends GameObject {
-        private _target;
-        private _speed;
-        constructor(target: f.Vector3);
-        Move(): void;
-        private HandleCollision;
     }
 }
 declare namespace ChessGame {

@@ -31,7 +31,10 @@ namespace ChessGame {
     let _inputSetting: Input;
     let _playerName: string = "";
     let _enemyName: string = "";
-
+    let soundOff: HTMLSpanElement;
+    let soundOn: HTMLSpanElement;
+    let graveyard: HTMLUListElement;
+    let soundContainer: HTMLDivElement;
     window.addEventListener("load", Init);
     export class GameController {
         private _inputController: InputController;
@@ -41,7 +44,6 @@ namespace ChessGame {
         private _root: f.Graph;
         private _soundController: SoundController;
         private _duellMode: boolean = false;
-        private _duellController: DuellController;
         private _cameraController: CameraController;
         private _checkmate: boolean = false;
         private _finished: boolean = false;
@@ -51,11 +53,11 @@ namespace ChessGame {
             this._chessPlayer = chessPlayer;
             this._currentUser = random > 5 ? UserType.PLAYER : UserType.ENEMY;
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
+            this._playerTimeController.StartTimer();
             this._root = root;
             this._soundController = new SoundController(SoundType.TIME);
             this._root.addComponent(this._soundController);
             this._cameraController = cameraController;
-            this._duellController = null;
             this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
@@ -69,7 +71,11 @@ namespace ChessGame {
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController.UpdateCurrentUser(this._currentUser);
             this._inputController.HandleInput();
+            this._playerTimeController.Count();
             this.WatchCheckmate();
+        }
+        public ShowGraveyard(): void {
+            this._chessPlayer[this._currentUser].WriteGravayardFigures(graveyard);
         }
         public HandleFinishMove(): void {
             this._playerTimeController.StoppTimer();
@@ -85,6 +91,7 @@ namespace ChessGame {
             State.Instance.SetUser = this._currentUser;
             this._playerTimeController.StartTimer();
             this._root.addComponent(this._soundController);
+            this.ShowGraveyard();
 
         }
         public WatchEndGame(): void {
@@ -153,6 +160,8 @@ namespace ChessGame {
     function Init(): void {
         let dialog: HTMLDialogElement = document.getElementById("start") as HTMLDialogElement;
         dialog.showModal();
+        soundContainer = document.getElementById("volume-icon") as HTMLDivElement;
+        soundContainer.style.display = "none";
         const PLAYERINPUT: HTMLInputElement = document.getElementById("player-name") as HTMLInputElement;
         const ENEMYINPUT: HTMLInputElement = document.getElementById("enemy-name") as HTMLInputElement;
         const STARTBUTTON: HTMLButtonElement = document.getElementById("play-button") as HTMLButtonElement;
@@ -178,7 +187,14 @@ namespace ChessGame {
         f.Physics.settings.debugDraw = true;
         f.Physics.settings.defaultRestitution = 0.5;
         f.Physics.settings.defaultFriction = 0.8;
+        graveyard = document.getElementById("graveyard-container") as HTMLUListElement;
+       
+        soundOff = document.getElementById("off") as HTMLSpanElement;
+        soundOn = document.getElementById("on") as HTMLSpanElement;
 
+        soundContainer.addEventListener("click", () => {
+            DataController.Instance.SetSoundSetting();
+        });
 
         await FudgeCore.Project.loadResourcesFromHTML();
         FudgeCore.Debug.log("Project:", FudgeCore.Project.resources);
@@ -188,6 +204,7 @@ namespace ChessGame {
         StartChessMatch();
     }
     function StartChessMatch(): void {
+        soundContainer.style.display = "block";
         InitWorld();
         InitCamera();
         InitAvatar();
@@ -299,6 +316,16 @@ namespace ChessGame {
             document.getElementById("restart").addEventListener("click", () => {
                 window.location.reload();
             });
+        }
+        switch (DataController.Instance.soundSetting.withSound) {
+            case true:
+                soundOff.style.display = "none";
+                soundOn.style.display = "block";
+                break;
+            default:
+                soundOff.style.display = "block";
+                soundOn.style.display = "none";
+                break;
         }
     }
 

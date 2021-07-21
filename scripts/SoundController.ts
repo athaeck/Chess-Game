@@ -16,9 +16,9 @@ namespace ChessGame {
                 this.getContainer().removeComponent(this);
             }
         }
-        private async FetchData(type: SoundType): Promise<void>{
+        private async FetchData(type: SoundType): Promise<void> {
             this._setting = await DataController.Instance.GetSound(type);
-            this._soundSettings = await (await DataController.Instance.GetGameSetting()).SoundSetting;
+            this._soundSettings = DataController.Instance.soundSetting;
         }
         private async Created(event: Event): Promise<void> {
             await this.FetchData(this._type);

@@ -7,18 +7,10 @@ namespace ChessGame {
         private _name: string;
         private _body: f.ComponentRigidbody;
         private _parent: ChessFigure;
-        private _enemyOnTheWay: boolean = false;
-        private _collidingEnemy: ChessFigure;
         constructor() {
             super();
             this.singleton = true;
             this.addEventListener(f.EVENT.COMPONENT_ADD, this.Start.bind(this));
-        }
-        public get EnemyOnTheWay(): boolean {
-            return this._enemyOnTheWay;
-        }
-        public get CollidingEnemy(): ChessFigure {
-            return this._collidingEnemy;
         }
         public Init(target: f.ComponentTransform, places: f.Node[], name: string): void {
             this._name = name;
@@ -26,26 +18,22 @@ namespace ChessGame {
             this._places = places;
         }
         public EndMovement(): void {
-            this._enemyOnTheWay = false;
-            this._collidingEnemy = null;
             this._body.physicsType = f.PHYSICS_TYPE.KINEMATIC;
             this._body.mass = 1;
             this._body.restitution = 0.5;
-            this.getContainer().getComponent(CollisionController).Remove();
             this.getContainer().removeComponent(this);
         }
         private Start(): void {
             this._parent = this.getContainer() as ChessFigure;
             this._body = this._parent.getComponent(f.ComponentRigidbody);
             this._start = this._parent.GetPlace().getComponent(f.ComponentTransform);
-            this._parent.addComponent(new CollisionController());
             this.CheckIfEnemyOccupyWay();
             this.HandleMove();
         }
         private HandleMove(): void {
             this._parent.addComponent(new SoundController(SoundType.MOVE));
             this._body.physicsType = f.PHYSICS_TYPE.DYNAMIC;
-            this._body.mass = 50;
+            this._body.mass = 1;
             this._body.restitution = 0;
             const toTranslate: f.Vector3 = new f.Vector3(this._target.mtxLocal.translation.x - this._start.mtxLocal.translation.x, 0, this._target.mtxLocal.translation.z - this._start.mtxLocal.translation.z);
             switch (this._name) {

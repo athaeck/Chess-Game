@@ -35,5 +35,12 @@ namespace ChessGame {
         public AddFigure(figure: ChessFigure): void {
             this._chessFigures.appendChild(figure);
         }
+        public WriteGravayardFigures(container: HTMLUListElement): void {
+            container.innerHTML = "";
+            if (this._graveYard.length > 0)
+            for (const cp of this._graveYard) {
+                container.innerHTML += `<li id="element">${cp}</li>`;
+            }
+        }
     }
 }

@@ -23,12 +23,28 @@
     <script type="text/javascript" src="./build/ChessGame.js"></script>
     <link rel="stylesheet" href="ChessGame.css" />
     <link type="resources" src="ChessGame.json" />
+    <link
+      href="./references/fontawesome-free-5.15.3-web/css/all.css"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <!-- UI -->
     <div id="ui-wrapper">
-      <input type="text" key="player" disabled /> ist am Zug
-      <input type="text" key="checkmate" disabled />
+      <div>
+        <input id="player-turn" type="text" key="player" disabled /> ist am Zug
+      </div>
+      <div>
+        <input id="is-checkmate" type="text" key="checkmate" disabled />
+      </div>
+      <div id="graveyard">
+        <h2>Friedhof:</h2>
+        <ul id="graveyard-container"></ul>
+      </div>
+      <div id="volume-icon">
+        <i id="off" class="fas fa-volume-mute"></i>
+        <i id="on" class="fas fa-volume-up"></i>
+      </div>
     </div>
     <canvas class="fullscreen"></canvas>
     <dialog id="start">

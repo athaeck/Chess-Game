@@ -8,12 +8,28 @@ namespace ChessGame {
 
         private _gameSetting: string = "./data/GameSetting.json";
 
+        private _setting: Setting;
+
+        private _soundSetting: SoundSetting;
+
         private constructor() {
-            
+            this.fetch();
         }
 
         public static get Instance(): DataController {
-            return this._instance || (this._instance = new this());
+             return this._instance || (this._instance = new this());
+        }
+
+        public get soundSetting(): SoundSetting {
+            return this._soundSetting;
+        }
+
+        public get setting(): Setting {
+            return this._setting;
+        }
+
+        public SetSoundSetting(): void {
+            this._soundSetting.withSound = !this._soundSetting.withSound;
         }
 
         public async GetMovementData(name: string): Promise<ChessPlayerSetting> {
@@ -29,6 +45,11 @@ namespace ChessGame {
         public async GetGameSetting(): Promise<Setting> {
             const setting: Setting = await (await fetch(this._gameSetting)).json();
             return setting;
+        }
+
+        private async fetch(): Promise<void> {
+            this._setting = await (await fetch(this._gameSetting)).json();
+            this._soundSetting = this._setting.SoundSetting;
         }
     }
 }
