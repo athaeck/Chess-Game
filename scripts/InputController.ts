@@ -190,7 +190,6 @@ namespace ChessGame {
             }
             if (this._clickable && f.Keyboard.isPressedOne([f.KEYBOARD_CODE.ENTER])) {
                 this.Move();
-                if (!this._isCheckmate) {
                     this.SelectTimerReset();
                     setTimeout(
                         (ref: f.Node) => {
@@ -205,7 +204,6 @@ namespace ChessGame {
                         this._currentChessFigureIndex
                         ]
                     );
-                }
             }
             this.ShowSelection();
         }
