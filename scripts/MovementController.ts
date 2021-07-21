@@ -70,11 +70,6 @@ namespace ChessGame {
                     const chessFigure: ChessFigure = placeController.GetChessFigure();
                     if (chessFigure) {
                         if (this._parent.GetUser().GetPlayerType() !== chessFigure.GetUser().GetPlayerType()) {
-
-                            // this._enemyOnTheWay = true;
-                            // chessFigure.getComponent(f.ComponentRigidbody).physicsType = f.PHYSICS_TYPE.DYNAMIC;
-                            // chessFigure.getComponent(f.ComponentRigidbody).friction = 0;
-                            // this._collidingEnemy = chessFigure;
                             this._parent.addComponent(new SoundController(SoundType.HIT));
                             chessFigure.GetUser().RemoveFigure(chessFigure);
                         }

@@ -29,7 +29,6 @@ namespace ChessGame {
             }
             let componentMaterial: f.ComponentMaterial = new f.ComponentMaterial(materialSolidWhite);
             this.addComponent(componentMaterial);
-            // this.addComponent(new CollisionController())
             this.mtxLocal.translate(new f.Vector3(this._place.mtxLocal.translation.x, posY, this._place.mtxLocal.translation.z));
             this.HandleMoveData(name);
             

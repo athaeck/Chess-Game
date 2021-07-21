@@ -2,7 +2,6 @@ namespace ChessGame {
   import fui = FudgeUserInterface;
   import f = FudgeCore;
   class GameState extends f.Mutable {
-    // public hits: number = 0;
     public time: number = 120;
     public player: string = "";
     public currentTime: number = 0;

@@ -15,7 +15,7 @@ namespace ChessGame {
         public set SetUser(user: UserType) {
             this.activeUser = user;
         }
-        public get User(): UserType{
+        public get User(): UserType {
             return this.activeUser;
         }
     }

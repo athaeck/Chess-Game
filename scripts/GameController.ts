@@ -66,29 +66,14 @@ namespace ChessGame {
             return this._winner;
         }
         public HandleGame(): void {
-            // if (!this._finished) {
-            // if (!this._checkmate) {
             this._playerTimeController = this._chessPlayer[this._currentUser].GetTimeController();
             this._inputController.UpdateCurrentUser(this._currentUser);
             this._inputController.HandleInput();
-            // this.WatchMovementController();
-            // this.DeSpawnEnemy();   
             this.WatchCheckmate();
-            // this.HandleFinishMove();
-            // }
-            // else {
-            //     this._duellController.HandleInput();
-            //     this.HandleMovements();
-            //     this.WatchCheckmateEnd();
-            // }
-            // }
-            // this.WatchEndGame();
         }
         public HandleFinishMove(): void {
-            // if (this._inputController.GetSelectionState()) {
             this._playerTimeController.StoppTimer();
             this._soundController.Delete();
-            // this._enemyOnTheWay = false;
             switch (this._currentUser) {
                 case UserType.PLAYER:
                     this._currentUser = UserType.ENEMY;
@@ -100,7 +85,6 @@ namespace ChessGame {
             State.Instance.SetUser = this._currentUser;
             this._playerTimeController.StartTimer();
             this._root.addComponent(this._soundController);
-            // }
 
         }
         public WatchEndGame(): void {
@@ -165,49 +149,6 @@ namespace ChessGame {
                 gameState.checkmate = "";
             }
         }
-        // for (const type in UserType) {
-        //     for(this._chessPlayer[UserType[type]])
-        //     // console.log(type)
-        //     // if (!(String(type))) {
-
-        //     // }
-
-        // }
-        // const 
-        //     // if (this._inputController.Checkmate) {
-        //         // console.log(111)
-        //         this._inputController.Checkmate = false;
-        //         this._duellMode = true;
-        //         // const surface: f.Node = this._root.getChildrenByName("Surface")[0];
-        //         // setTimeout(()=>{})
-        //         if (this._duellController === null) {
-        //             this._duellController = new DuellController(this._cameraController, this._inputController.CurrentDuell);
-        //             this._root.addChild(this._duellController.BattleGround);
-        //             console.log(this._root);
-        //         }
-
-        //     // }
-        // public WatchCheckmateEnd(): void {
-        //     if (this._duellController.End) {
-        //         this._checkmate = false;
-        //         this._root.removeChild(this._duellController.BattleGround);
-        //         this._duellController = null;
-        //     }
-        // }
-        // public HandleMovements(): void {
-        //     // const projectiles: Projectile[] = [];
-        //     // for (const figure of this._chessPlayer[this._currentUser].GetFigures()) {
-        //     //     // for(const proj)
-        //     //     if (figure.getChildren().length > 0) {
-        //     //         for (const prj of figure.getChildren() as Projectile[]) {
-        //     //             projectiles.push(prj);
-        //     //         }
-        //     //     }
-        //     // }
-        //     // for (const projectile of projectiles) {
-        //     //     projectile.Move();
-        //     // }
-        // }
     }
     function Init(): void {
         let dialog: HTMLDialogElement = document.getElementById("start") as HTMLDialogElement;
