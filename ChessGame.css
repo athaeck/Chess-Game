@@ -41,6 +41,15 @@ canvas.fullscreen {
     margin: 14px 0;
 }
 
+#is-checkmate {
+    font-size: 30px;
+    width: 200px;
+}
+
+.checkm {
+    margin-left: 200px;
+}
+
 #enemy-name {
     width: 100%;
     border: 1px solid black;
