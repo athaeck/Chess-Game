@@ -13,3 +13,5 @@ Der Spieler, der die Schwarzen Figuren hat steuert die Auswahl seiner Figuren mi
 Der Spieler mit den weißen Figuren wählt mit den Tasten <b>Pfeil-links</b> und <b>Pfeil-rechts</b> seine Schachfiguren aus. Mit <b>Pfeil-hoch</b> und <b>Pfeil-runter</b> selektiert er die Zielposition.
 Die Restlichen Tastatur Eingaben sind identisch.
 Möchten die Spieler keinen Sound im Spiel haben, so müssen sie nur auf den Lautsprecher klicken um den Sound auszustellen. Einschalten funktioniert auf dieselbe Art und Weiße.
+
+Ziel ist es die gelbe Figur des Gegners zu besiegen. Die Gelbe Figur ist der König des jeweiligen Spielers. Allerdings sollte man auf seine Schachfiguren Acht geben, ist eine Figur tot, so hat man keine Möglichkeit sie zurückzugewinnen.
