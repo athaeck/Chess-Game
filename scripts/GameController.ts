@@ -34,6 +34,7 @@ namespace ChessGame {
     let soundOff: HTMLSpanElement;
     let soundOn: HTMLSpanElement;
     let graveyard: HTMLUListElement;
+    let graveyardContainer: HTMLDivElement;
     let soundContainer: HTMLDivElement;
     window.addEventListener("load", Init);
     export class GameController {
@@ -47,6 +48,7 @@ namespace ChessGame {
         private _checkmate: boolean = false;
         private _finished: boolean = false;
         private _winner: GameEnd;
+        private _places: f.Node[];
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph) {
             const random: number = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
@@ -55,6 +57,7 @@ namespace ChessGame {
             this._soundController = new SoundController(SoundType.TIME);
             this._root.addComponent(this._soundController);
             this._cameraController = cameraController;
+            this._places = places;
             this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
@@ -85,7 +88,6 @@ namespace ChessGame {
             State.Instance.SetUser = this._currentUser;
             this._root.addComponent(this._soundController);
             this.ShowGraveyard();
-
         }
         public WatchEndGame(): void {
             let gameEnd: GameEnd;
@@ -152,6 +154,8 @@ namespace ChessGame {
     }
     function Init(): void {
         let dialog: HTMLDialogElement = document.getElementById("start") as HTMLDialogElement;
+        graveyardContainer = document.getElementById("graveyard") as HTMLDivElement;
+        graveyardContainer.style.display = "none";
         dialog.showModal();
         soundContainer = document.getElementById("volume-icon") as HTMLDivElement;
         soundContainer.style.display = "none";
@@ -199,6 +203,7 @@ namespace ChessGame {
     }
     function StartChessMatch(): void {
         soundContainer.style.display = "block";
+        graveyardContainer.style.display = "block";
         InitWorld();
         InitCamera();
         InitAvatar();

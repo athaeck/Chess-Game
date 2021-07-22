@@ -116,6 +116,7 @@ declare namespace ChessGame {
         private _checkmate;
         private _finished;
         private _winner;
+        private _places;
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph);
         get finished(): boolean;
         get winner(): GameEnd;

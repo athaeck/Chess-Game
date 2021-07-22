@@ -263,6 +263,7 @@ var ChessGame;
     let soundOff;
     let soundOn;
     let graveyard;
+    let graveyardContainer;
     let soundContainer;
     window.addEventListener("load", Init);
     class GameController {
@@ -276,6 +277,7 @@ var ChessGame;
         _checkmate = false;
         _finished = false;
         _winner;
+        _places;
         constructor(chessPlayer, places, cameraController, selctionController, root) {
             const random = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
@@ -284,6 +286,7 @@ var ChessGame;
             this._soundController = new ChessGame.SoundController(ChessGame.SoundType.TIME);
             this._root.addComponent(this._soundController);
             this._cameraController = cameraController;
+            this._places = places;
             this._inputController = new ChessGame.InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
@@ -381,6 +384,8 @@ var ChessGame;
     ChessGame.GameController = GameController;
     function Init() {
         let dialog = document.getElementById("start");
+        graveyardContainer = document.getElementById("graveyard");
+        graveyardContainer.style.display = "none";
         dialog.showModal();
         soundContainer = document.getElementById("volume-icon");
         soundContainer.style.display = "none";
@@ -424,6 +429,7 @@ var ChessGame;
     }
     function StartChessMatch() {
         soundContainer.style.display = "block";
+        graveyardContainer.style.display = "block";
         InitWorld();
         InitCamera();
         InitAvatar();
