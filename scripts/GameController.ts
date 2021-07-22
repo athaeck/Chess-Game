@@ -24,7 +24,6 @@ namespace ChessGame {
     let _gameController: GameController;
     let _cameraController: CameraController;
     let _places: f.Node[] = [];
-    let _surface: f.Node;
     let _chessPlayer: ChessPlayers;
     let _selectionControl: SelectionControl;
     let _startUserPlayer: UserType = UserType.PLAYER;
@@ -43,12 +42,8 @@ namespace ChessGame {
         private _chessPlayer: ChessPlayers;
         private _root: f.Graph;
         private _soundController: SoundController;
-        private _duellMode: boolean = false;
-        private _cameraController: CameraController;
-        private _checkmate: boolean = false;
         private _finished: boolean = false;
         private _winner: GameEnd;
-        private _places: f.Node[];
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph) {
             const random: number = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
@@ -56,8 +51,6 @@ namespace ChessGame {
             this._root = root;
             this._soundController = new SoundController(SoundType.TIME);
             this._root.addComponent(this._soundController);
-            this._cameraController = cameraController;
-            this._places = places;
             this._inputController = new InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
@@ -167,7 +160,6 @@ namespace ChessGame {
         STARTBUTTON.addEventListener("click", () => {
             _enemyName = ENEMYINPUT.value;
             _playerName = PLAYERINPUT.value;
-            console.log(_enemyName, _playerName);
             ERROR.style.display = "none";
             ERROR.innerHTML = "";
             if (_playerName.length > 0 && _enemyName.length > 0) {
@@ -220,7 +212,6 @@ namespace ChessGame {
         if (_inputSetting.mouseLock) {
             _canvas.addEventListener("click", _canvas.requestPointerLock);
         }
-        console.log(_root);
         f.Loop.addEventListener(f.EVENT.LOOP_FRAME, HandleGame);
         f.Loop.start(f.LOOP_MODE.TIME_GAME, 60);
     }
@@ -256,7 +247,6 @@ namespace ChessGame {
     function InitWorld(): void {
         const surface: f.Node = _root.getChildrenByName("Surface")[0];
         surface.addComponent(new f.ComponentRigidbody(0, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT));
-        _surface = surface;
         const figures: f.Node = _root.getChildrenByName("Figures")[0];
         const playerF: f.Node = figures.getChildrenByName("Player")[0];
         const enemyF: f.Node = figures.getChildrenByName("Enemy")[0];

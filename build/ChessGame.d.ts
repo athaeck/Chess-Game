@@ -28,7 +28,6 @@ declare namespace ChessGame {
         SetPlace(place: f.Node): void;
         GetPlace(): f.Node;
         MoveFigure(movementController: MovementController): void;
-        DeleteMovementController(): void;
         GetChessFigureMovement(): ChessPlayerSetting;
         UpdateInitScale(): void;
         GetUser(): ChessPlayer;
@@ -111,12 +110,8 @@ declare namespace ChessGame {
         private _chessPlayer;
         private _root;
         private _soundController;
-        private _duellMode;
-        private _cameraController;
-        private _checkmate;
         private _finished;
         private _winner;
-        private _places;
         constructor(chessPlayer: ChessPlayers, places: f.Node[], cameraController: CameraController, selctionController: SelectionControl, root: f.Graph);
         get finished(): boolean;
         get winner(): GameEnd;

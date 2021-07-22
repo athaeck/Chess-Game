@@ -22,7 +22,6 @@ namespace ChessGame {
             let vector3: f.Vector3;
             switch (currentPlayer) {
                 case UserType.PLAYER:
-                    // this._transformComponent.mtxLocal.translation
                     vector3 = new f.Vector3(-7, 10, 0);
                     break;
                 default:

@@ -23,7 +23,6 @@ var ChessGame;
             let vector3;
             switch (currentPlayer) {
                 case ChessGame.UserType.PLAYER:
-                    // this._transformComponent.mtxLocal.translation
                     vector3 = new f.Vector3(-7, 10, 0);
                     break;
                 default:
@@ -97,9 +96,6 @@ var ChessGame;
         MoveFigure(movementController) {
             this.addComponent(movementController);
         }
-        DeleteMovementController() {
-            console.log();
-        }
         GetChessFigureMovement() {
             return this._move;
         }
@@ -134,7 +130,6 @@ var ChessGame;
             this._chessFigures = chessFigures;
             this._type = type;
             this._name = name;
-            console.log(name);
         }
         get name() {
             return this._name;
@@ -253,7 +248,6 @@ var ChessGame;
     let _gameController;
     let _cameraController;
     let _places = [];
-    let _surface;
     let _chessPlayer;
     let _selectionControl;
     let _startUserPlayer = ChessGame.UserType.PLAYER;
@@ -272,12 +266,8 @@ var ChessGame;
         _chessPlayer;
         _root;
         _soundController;
-        _duellMode = false;
-        _cameraController;
-        _checkmate = false;
         _finished = false;
         _winner;
-        _places;
         constructor(chessPlayer, places, cameraController, selctionController, root) {
             const random = new f.Random().getRange(0, 11);
             this._chessPlayer = chessPlayer;
@@ -285,8 +275,6 @@ var ChessGame;
             this._root = root;
             this._soundController = new ChessGame.SoundController(ChessGame.SoundType.TIME);
             this._root.addComponent(this._soundController);
-            this._cameraController = cameraController;
-            this._places = places;
             this._inputController = new ChessGame.InputController(places, chessPlayer, cameraController, selctionController, this._currentUser, this);
             console.log(this);
         }
@@ -397,7 +385,6 @@ var ChessGame;
         STARTBUTTON.addEventListener("click", () => {
             _enemyName = ENEMYINPUT.value;
             _playerName = PLAYERINPUT.value;
-            console.log(_enemyName, _playerName);
             ERROR.style.display = "none";
             ERROR.innerHTML = "";
             if (_playerName.length > 0 && _enemyName.length > 0) {
@@ -442,7 +429,6 @@ var ChessGame;
         if (_inputSetting.mouseLock) {
             _canvas.addEventListener("click", _canvas.requestPointerLock);
         }
-        console.log(_root);
         f.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, HandleGame);
         f.Loop.start(f.LOOP_MODE.TIME_GAME, 60);
     }
@@ -476,7 +462,6 @@ var ChessGame;
     function InitWorld() {
         const surface = _root.getChildrenByName("Surface")[0];
         surface.addComponent(new f.ComponentRigidbody(0, f.PHYSICS_TYPE.STATIC, f.COLLIDER_TYPE.CUBE, f.PHYSICS_GROUP.DEFAULT));
-        _surface = surface;
         const figures = _root.getChildrenByName("Figures")[0];
         const playerF = figures.getChildrenByName("Player")[0];
         const enemyF = figures.getChildrenByName("Enemy")[0];

@@ -9,7 +9,6 @@ namespace ChessGame {
             this._chessFigures = chessFigures;
             this._type = type;
             this._name = name;
-            console.log(name);
         }
         public get name(): string {
             return this._name;

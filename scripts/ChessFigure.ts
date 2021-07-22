@@ -41,9 +41,6 @@ namespace ChessGame {
         public MoveFigure(movementController: MovementController): void {
             this.addComponent(movementController);
         }
-        public DeleteMovementController(): void {
-            console.log();
-        }
         public GetChessFigureMovement(): ChessPlayerSetting {
             return this._move;
         }
