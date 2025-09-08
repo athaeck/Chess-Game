@@ -1,7 +1,7 @@
 ChessGame
 <hr/>
 <ul>
-<li>Zum Spiel: <a href="https://athaeck/PrimaSS21Endabgabe/ChessGame.html">ChessGame.html</a></li>
+<li>Zum Spiel: <a href="https://athaeck.github.io/Chess-Game/ChessGame.html">ChessGame.html</a></li>
 <li>Zum Code: <a href="https://github.com/athaeck/PrimaSS21Endabgabe/tree/main/scripts">Scripte</a></li>
 <li>Zum Designdokument: <a href="https://github.com/athaeck/PrimaSS21Endabgabe/blob/main/konzept/Designdocument.pdf">Designdocument.pdf</a></li>
 <li>Zur Zip Datei des Repos: <a href="https://github.com/athaeck/PrimaSS21Endabgabe/blob/main/zip/PrimaSS21Endabgabe.rar">PrimaSS21Endabgabe.rar</a></li>
