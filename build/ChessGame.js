@@ -399,7 +399,7 @@ var ChessGame;
     }
     async function Start() {
         f.Physics.settings.debugMode = f.PHYSICS_DEBUGMODE.COLLIDERS;
-        f.Physics.settings.debugDraw = true;
+        f.Physics.settings.debugDraw = false;
         f.Physics.settings.defaultRestitution = 0.5;
         f.Physics.settings.defaultFriction = 0.8;
         graveyard = document.getElementById("graveyard-container");
